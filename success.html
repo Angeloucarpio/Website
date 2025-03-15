@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale: 1.0">
+    <title>Success Tickets</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Styles for success.html */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #e8f5e9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            width: 100%;
+            background-color: #0044cc;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        .navbar a {
+            color: white;
+            font-size: 18px;
+            margin: 0 20px;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .navbar a:hover {
+            background-color: #0033aa;
+        }
+
+        .container {
+            width: 80%;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        h1 {
+            color: #00796b;
+            margin-bottom: 20px;
+        }
+
+        .ticket-item {
+            background-color: #e0f7fa;
+            border-radius: 5px;
+            margin: 10px 0;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .ticket-item button {
+            background-color: #0044cc;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .ticket-item button:hover {
+            background-color: #0033aa;
+        }
+
+        .payment-date {
+            font-size: 14px;
+            color: #00796b;
+            margin-top: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Navbar with Home and Pending links -->
+    <div class="navbar">
+        <a href="index.html">Home</a>
+        <a href="pending.html">Pending</a>
+        <a href="success.html">Success</a>
+    </div>
+
+    <div class="container">
+        <h1>Success Tickets</h1>
+        <div id="ticketList"></div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            loadTickets('paid');
+        };
+
+        function loadTickets(status) {
+            const tickets = JSON.parse(localStorage.getItem('tickets')) || [];
+            const ticketList = document.getElementById('ticketList');
+            ticketList.innerHTML = '';
+
+            tickets.filter(ticket => ticket.status === status).forEach((ticket, index) => {
+                const ticketItem = document.createElement('div');
+                ticketItem.classList.add('ticket-item');
+                ticketItem.innerHTML = `
+                    <p><strong>Name:</strong> ${ticket.name}</p>
+                    <p><strong>Ticket Price:</strong> $${ticket.ticketPrice}</p>
+                    <p><strong>Quantity:</strong> ${ticket.quantity}</p>
+                    <p><strong>Total Amount:</strong> $${ticket.totalAmount}</p>
+                    <p><strong>Down Payment:</strong> $${ticket.downPayment}</p>
+                    <p><strong>Pending Payment:</strong> $${ticket.pendingAmount}</p>
+                    <div class="payment-date">
+                        <strong>Payment Success Date:</strong> ${ticket.paymentSuccessDate || 'N/A'}
+                    </div>
+                    <button onclick="editTicket(${index})">Edit</button>
+                    <button onclick="deleteTicket(${index})">Delete</button>
+                `;
+                ticketList.appendChild(ticketItem);
+            });
+        }
+
+        function deleteTicket(index) {
+            const tickets = JSON.parse(localStorage.getItem('tickets'));
+            tickets.splice(index, 1); // Remove ticket from the array
+            localStorage.setItem('tickets', JSON.stringify(tickets)); // Update localStorage
+            loadTickets('paid'); // Reload the success tickets list
+        }
+
+        function editTicket(index) {
+            const tickets = JSON.parse(localStorage.getItem('tickets'));
+            const ticket = tickets[index];
+
+            // Prompt the user to edit ticket details
+            const newTicketPrice = prompt("Edit Ticket Price", ticket.ticketPrice);
+            const newQuantity = prompt("Edit Quantity", ticket.quantity);
+            const newDownPayment = prompt("Edit Down Payment", ticket.downPayment);
+            
+            // If user inputs valid values, update the ticket
+            if (newTicketPrice && newQuantity && newDownPayment) {
+                ticket.ticketPrice = parseFloat(newTicketPrice);
+                ticket.quantity = parseInt(newQuantity);
+                ticket.downPayment = parseFloat(newDownPayment);
+                ticket.totalAmount = ticket.ticketPrice * ticket.quantity;
+                ticket.pendingAmount = ticket.totalAmount - ticket.downPayment;
+
+                // Update the ticket in the local storage
+                tickets[index] = ticket;
+                localStorage.setItem('tickets', JSON.stringify(tickets));
+
+                // Reload the success tickets list
+                loadTickets('paid');
+            } else {
+                alert("Invalid input values.");
+            }
+        }
+    </script>
+
+</body>
+</html>
