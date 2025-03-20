@@ -115,6 +115,7 @@
         <a href="index.html">Home</a>
         <a href="pending.html">Pending</a>
         <a href="success.html">Success</a>
+        <a href="transactionRecorded.html">Transaction Record</a>
     </div>
 
     <div class="container">
@@ -166,24 +167,23 @@
             if (!paymentHistory || paymentHistory.length === 0) {
                 return '<p>No payments made yet.</p>';
             }
-            return paymentHistory.map(payment => `
+            return paymentHistory.map(payment => ` 
                 <p>Amount: $${payment.amount} - Date: ${payment.date}</p>
             `).join('');
         }
 
         function deleteTicket(index) {
-    const tickets = JSON.parse(localStorage.getItem('tickets'));
-    const ticket = tickets.splice(index, 1)[0]; // Remove ticket from the array
+            const tickets = JSON.parse(localStorage.getItem('tickets'));
+            const ticket = tickets.splice(index, 1)[0]; // Remove ticket from the array
 
-    // Store the ticket in the TransactionRecorded page
-    let transactionHistory = JSON.parse(localStorage.getItem('transactionHistory')) || [];
-    transactionHistory.push(ticket);
-    localStorage.setItem('transactionHistory', JSON.stringify(transactionHistory)); // Update transaction history
+            // Store the ticket in the TransactionRecorded page
+            let transactionHistory = JSON.parse(localStorage.getItem('transactionHistory')) || [];
+            transactionHistory.push(ticket);
+            localStorage.setItem('transactionHistory', JSON.stringify(transactionHistory)); // Update transaction history
 
-    localStorage.setItem('tickets', JSON.stringify(tickets)); // Update localStorage
-    loadTickets('paid'); // Reload the success tickets list
-}
-
+            localStorage.setItem('tickets', JSON.stringify(tickets)); // Update localStorage
+            loadTickets('paid'); // Reload the success tickets list
+        }
 
         function editTicket(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
@@ -216,6 +216,5 @@
             }
         }
     </script>
-
 </body>
 </html>
