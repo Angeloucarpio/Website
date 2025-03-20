@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chamber's Tour</title>
+    <meta name="viewport" content="width=device-width, initial-scale: 1.0">
+    <title>Pending Tickets</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
+        /* General Styles */
         * {
             margin: 0;
             padding: 0;
@@ -14,33 +15,25 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            background: url('https://cdn.dribbble.com/userupload/20625007/file/original-54b2da9b45bbe780d85e8e810b0aadc1.gif') no-repeat center center fixed;
-            background-size: cover;
-            color: #fff;
+            background-color: #f4f7fc;
+            color: #333;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
             min-height: 100vh;
+            padding-top: 70px; /* Padding for the fixed navbar */
         }
 
         .navbar {
             width: 100%;
-            background: rgba(0, 68, 204, 0.9);
+            background-color: #0044cc;
             padding: 15px 0;
             text-align: center;
             position: fixed;
             top: 0;
             left: 0;
             z-index: 1000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .navbar img {
-            height: 40px;
-            margin-right: 20px;
         }
 
         .navbar a {
@@ -60,82 +53,72 @@
         .container {
             width: 80%;
             padding: 50px;
-            background: rgba(255, 255, 255, 0.15);
+            background-color: #fff;
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-            margin-top: 100px;
-            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            margin-top: 80px; /* Space for the navbar */
         }
 
         h1 {
-            color: #ffdd57;
+            color: #0044cc;
             margin-bottom: 20px;
-            font-size: 36px;
+            font-size: 32px;
             font-weight: bold;
             text-align: center;
         }
 
-        .form-group {
-            margin-bottom: 25px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.2);
+        .ticket-item {
+            background-color: #f4f4f4;
             border-radius: 8px;
+            margin: 15px 0;
+            padding: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        label {
+        .ticket-item p {
             font-size: 16px;
-            margin-bottom: 5px;
-            display: inline-block;
-            color: #fff;
-        }
-
-        input {
-            padding: 12px;
-            font-size: 16px;
-            width: 100%;
-            border: none;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            transition: 0.3s ease;
-            background: rgba(255, 255, 255, 0.8);
-            color: #333;
-        }
-
-        input:focus {
-            outline: none;
-            border: 2px solid #ffdd57;
+            margin: 10px 0;
         }
 
         button {
-            padding: 12px 20px;
-            background: #ffdd57;
-            color: #333;
+            background-color: #0044cc;
+            color: white;
             border: none;
             border-radius: 5px;
-            font-size: 18px;
+            padding: 8px 16px;
             cursor: pointer;
-            width: 100%;
-            transition: 0.3s ease;
-            font-weight: bold;
+            margin: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
         }
 
         button:hover {
-            background: #ffc107;
+            background-color: #0033aa;
         }
 
-        .pending-list {
-            margin-top: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
+        .payment-history {
+            background-color: #e1f5fe;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+
+        .payment-history p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .pending-date {
+            font-size: 14px;
+            color: #ff5722;
+            margin-top: 10px;
         }
 
         .footer {
             margin-top: 50px;
             padding: 20px;
-            background: rgba(0, 68, 204, 0.9);
+            background-color: #0044cc;
             color: white;
             text-align: center;
             width: 100%;
@@ -150,53 +133,196 @@
         .footer a:hover {
             text-decoration: underline;
         }
+
+        .edit-form {
+            display: none;
+            background-color: #f4f4f4;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .edit-form input {
+            padding: 8px;
+            margin: 5px;
+            width: 100%;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .edit-form button {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
+
+    <!-- Navbar with Home, Pending, and Success links -->
     <div class="navbar">
-        <img src="logo.png" alt="Chamber's Tour Logo">
         <a href="index.html">Home</a>
         <a href="pending.html">Pending</a>
         <a href="success.html">Success</a>
     </div>
 
     <div class="container">
-        <h1>Chamber's Tour</h1>
-        <form id="tourForm">
-            <div class="form-group">
-                <label for="name"><i class="fas fa-user"></i> Enter Your Name:</label>
-                <input type="text" id="name" placeholder="Your Name" required>
-            </div>
-            <div class="form-group">
-                <label for="ticketPrice"><i class="fas fa-ticket-alt"></i> Ticket Price (each):</label>
-                <input type="number" id="ticketPrice" placeholder="Price in USD" required>
-            </div>
-            <div class="form-group">
-                <label for="quantity"><i class="fas fa-trophy"></i> Quantity:</label>
-                <input type="number" id="quantity" placeholder="Number of Tickets" required>
-            </div>
-            <div class="form-group">
-                <label for="downPayment"><i class="fas fa-credit-card"></i> Down Payment:</label>
-                <input type="number" id="downPayment" placeholder="Down Payment Amount" required>
-            </div>
-            <button type="submit"><i class="fas fa-paper-plane"></i> Add Ticket</button>
-        </form>
+        <h1>Pending Tickets</h1>
+        <div id="ticketList"></div>
+        <div id="editForm" class="edit-form">
+            <h2>Edit Ticket</h2>
+            <form id="ticketEditForm">
+                <label for="editName">Name:</label>
+                <input type="text" id="editName" name="name" required>
 
-        <div class="pending-list" id="pendingList"></div>
+                <label for="editTicketPrice">Ticket Price ($):</label>
+                <input type="number" id="editTicketPrice" name="ticketPrice" required>
+
+                <label for="editQuantity">Quantity:</label>
+                <input type="number" id="editQuantity" name="quantity" required>
+
+                <label for="editDownPayment">Down Payment ($):</label>
+                <input type="number" id="editDownPayment" name="downPayment" required>
+
+                <button type="submit">Save Changes</button>
+                <button type="button" onclick="closeEditForm()">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2025 Chamber's Tour | <a href="#">Privacy Policy</a> | <a href="#">Contact</a></p>
     </div>
 
     <script>
-        document.getElementById('tourForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const name = document.getElementById('name').value;
-            const ticketPrice = parseFloat(document.getElementById('ticketPrice').value);
-            const quantity = parseInt(document.getElementById('quantity').value);
-            const downPayment = parseFloat(document.getElementById('downPayment').value);
-            const pendingAmount = ticketPrice * quantity - downPayment;
+        let currentEditIndex = null; // To track the ticket being edited
 
-            const pendingList = document.getElementById('pendingList');
-            pendingList.innerHTML += `<p>${name} - Pending: $${pendingAmount.toFixed(2)}</p>`;
+        window.onload = function() {
+            loadTickets('pending');
+        };
+
+        function loadTickets(status) {
+            const tickets = JSON.parse(localStorage.getItem('tickets')) || [];
+            const ticketList = document.getElementById('ticketList');
+            ticketList.innerHTML = '';
+
+            tickets.filter(ticket => ticket.status === status).forEach((ticket, index) => {
+                const ticketItem = document.createElement('div');
+                ticketItem.classList.add('ticket-item');
+                ticketItem.innerHTML = `
+                    <p><strong>Name:</strong> ${ticket.name}</p>
+                    <p><strong>Ticket Price:</strong> $${ticket.ticketPrice}</p>
+                    <p><strong>Quantity:</strong> ${ticket.quantity}</p>
+                    <p><strong>Total Amount:</strong> $${ticket.totalAmount}</p>
+                    <p><strong>Down Payment:</strong> $${ticket.downPayment}</p>
+                    <p><strong>Pending Payment:</strong> $${ticket.pendingAmount}</p>
+                    <button onclick="makePayment(${index})">Make Payment</button>
+                    <button onclick="deleteTicket(${index})">Delete</button>
+                    <button onclick="editTicket(${index})">Edit</button>
+                    <div id="paymentHistory-${index}" class="payment-history"></div>
+                    <div class="pending-date"><strong>Pending since:</strong> ${ticket.pendingDate}</div>
+                `;
+                ticketList.appendChild(ticketItem);
+                displayPaymentHistory(ticket, index);
+            });
+        }
+
+        function makePayment(index) {
+            const tickets = JSON.parse(localStorage.getItem('tickets'));
+            const ticket = tickets[index];
+
+            const paymentAmount = prompt('Enter payment amount:');
+            if (paymentAmount && parseFloat(paymentAmount) > 0) {
+                ticket.pendingAmount -= parseFloat(paymentAmount);
+
+                // Add payment details with timestamp
+                const paymentDate = new Date().toLocaleString();
+                const paymentDetails = {
+                    amount: paymentAmount,
+                    date: paymentDate
+                };
+
+                if (!ticket.paymentHistory) {
+                    ticket.paymentHistory = [];
+                }
+                ticket.paymentHistory.push(paymentDetails);
+
+                if (ticket.pendingAmount <= 0) {
+                    ticket.status = 'paid';
+                    alert("Payment successful! The ticket has been moved to the success page.");
+                }
+
+                tickets[index] = ticket;
+                localStorage.setItem('tickets', JSON.stringify(tickets));
+                loadTickets('pending');
+            } else {
+                alert('Invalid payment amount!');
+            }
+        }
+
+        function deleteTicket(index) {
+            const tickets = JSON.parse(localStorage.getItem('tickets'));
+            tickets.splice(index, 1);
+            localStorage.setItem('tickets', JSON.stringify(tickets));
+            loadTickets('pending');
+        }
+
+        function editTicket(index) {
+            const tickets = JSON.parse(localStorage.getItem('tickets'));
+            const ticket = tickets[index];
+
+            // Populate the form with ticket data
+            document.getElementById('editName').value = ticket.name;
+            document.getElementById('editTicketPrice').value = ticket.ticketPrice;
+            document.getElementById('editQuantity').value = ticket.quantity;
+            document.getElementById('editDownPayment').value = ticket.downPayment;
+
+            // Store the current ticket index for saving later
+            currentEditIndex = index;
+
+            // Show the edit form
+            document.getElementById('editForm').style.display = 'block';
+        }
+
+        function closeEditForm() {
+            document.getElementById('editForm').style.display = 'none';
+        }
+
+        document.getElementById('ticketEditForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const tickets = JSON.parse(localStorage.getItem('tickets'));
+            const ticket = tickets[currentEditIndex];
+
+            // Update ticket data with new values from the form
+            ticket.name = document.getElementById('editName').value;
+            ticket.ticketPrice = parseFloat(document.getElementById('editTicketPrice').value);
+            ticket.quantity = parseInt(document.getElementById('editQuantity').value);
+            ticket.downPayment = parseFloat(document.getElementById('editDownPayment').value);
+            ticket.totalAmount = ticket.ticketPrice * ticket.quantity;
+            ticket.pendingAmount = ticket.totalAmount - ticket.downPayment;
+
+            // Save the updated ticket to localStorage
+            tickets[currentEditIndex] = ticket;
+            localStorage.setItem('tickets', JSON.stringify(tickets));
+
+            // Close the form and reload the ticket list
+            closeEditForm();
+            loadTickets('pending');
         });
+
+        function displayPaymentHistory(ticket, index) {
+            const paymentHistoryDiv = document.getElementById(`paymentHistory-${index}`);
+            if (ticket.paymentHistory && ticket.paymentHistory.length > 0) {
+                paymentHistoryDiv.innerHTML = '<strong>Payment History:</strong>';
+                ticket.paymentHistory.forEach(payment => {
+                    paymentHistoryDiv.innerHTML += `
+                        <p>Amount: $${payment.amount} - Date: ${payment.date}</p>
+                    `;
+                });
+            } else {
+                paymentHistoryDiv.innerHTML = '<p>No payments made yet.</p>';
+            }
+        }
     </script>
+
 </body>
 </html>
