@@ -136,26 +136,6 @@
             display: none;
         }
 
-        /* Styling for the full payment checkbox */
-        .fullPayment-group {
-            margin-bottom: 20px;
-        }
-
-        .fullPayment-group label {
-            font-size: 16px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .fullPayment-group input {
-            margin-right: 10px;
-        }
-
-        .fullPayment-group .checkbox-text {
-            color: #555;
-            font-size: 14px;
-        }
-
     </style>
 </head>
 <body>
@@ -186,12 +166,6 @@
                 <label for="downPayment"><i class="fas fa-credit-card"></i> Down Payment:</label>
                 <input type="number" id="downPayment" placeholder="Down Payment Amount" required>
             </div>
-            <div class="form-group fullPayment-group">
-                <label for="fullPayment">
-                    <input type="checkbox" id="fullPayment"> Full Payment (if checked, no pending balance)
-                </label>
-                <p class="checkbox-text">If you select full payment, your transaction will be marked as complete and you will be redirected.</p>
-            </div>
             <button type="submit"><i class="fas fa-paper-plane"></i> Add Ticket</button>
         </form>
     </div>
@@ -207,18 +181,18 @@
             const ticketPrice = parseFloat(document.getElementById('ticketPrice').value);
             const quantity = parseInt(document.getElementById('quantity').value);
             const downPayment = parseFloat(document.getElementById('downPayment').value);
-            const fullPayment = document.getElementById('fullPayment').checked;
 
             if (name && ticketPrice && quantity) {
                 const totalAmount = ticketPrice * quantity;
-                let pendingAmount = 0;
+                let pendingAmount = totalAmount - downPayment;
                 let status = 'pending';
 
-                if (fullPayment) {
-                    pendingAmount = 0;
-                    status = 'success';
-                } else if (!fullPayment && downPayment) {
-                    pendingAmount = totalAmount - downPayment;
+                // If down payment covers the total cost, redirect to success
+                if (downPayment >= totalAmount) {
+                    status = 'success'; // Fully paid
+                    window.location.href = 'success.html'; // Redirect to success page
+                } else if (downPayment < totalAmount) {
+                    status = 'pending'; // Still pending balance
                 } else {
                     alert('Please fill in all fields!');
                     return;
@@ -227,17 +201,14 @@
                 const ticket = {
                     name, ticketPrice, quantity, downPayment, totalAmount, pendingAmount,
                     status,
-                    pendingDate: new Date().toLocaleString(), // Set pendingDate here
-                    paymentSuccessDate: fullPayment ? new Date().toLocaleString() : null // Set payment success date if fully paid
+                    pendingDate: new Date().toLocaleString() // Set pending date here
                 };
 
                 const tickets = JSON.parse(localStorage.getItem('tickets')) || [];
                 tickets.push(ticket);
                 localStorage.setItem('tickets', JSON.stringify(tickets));
 
-                if (fullPayment) {
-                    window.location.href = 'success.html'; // Redirect to success.html if full payment is made
-                } else {
+                if (status === 'pending') {
                     alert('Ticket Added!'); // Show success alert for pending ticket
                 }
 
@@ -247,17 +218,6 @@
             }
         });
 
-        // Toggle down payment input visibility based on full payment checkbox
-        document.getElementById('fullPayment').addEventListener('change', function () {
-            const downPaymentGroup = document.getElementById('downPaymentGroup');
-            if (this.checked) {
-                downPaymentGroup.classList.add('hidden');
-                document.getElementById('downPayment').required = false; // Make down payment not required
-            } else {
-                downPaymentGroup.classList.remove('hidden');
-                document.getElementById('downPayment').required = true; // Make down payment required again
-            }
-        });
     </script>
 
 </body>
