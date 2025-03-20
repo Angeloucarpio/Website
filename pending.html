@@ -188,8 +188,6 @@
         </div>
     </div>
 
-
-
     <script>
         let currentEditIndex = null; // To track the ticket being edited
 
@@ -227,32 +225,41 @@
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[index];
 
-            const paymentAmount = prompt('Enter payment amount:');
-            if (paymentAmount && parseFloat(paymentAmount) > 0) {
-                ticket.pendingAmount -= parseFloat(paymentAmount);
+            // Check if the ticket is pending before making a payment
+            if (ticket.status === 'pending') {
+                const paymentAmount = prompt('Enter payment amount:');
+                
+                if (paymentAmount && parseFloat(paymentAmount) > 0) {
+                    ticket.pendingAmount -= parseFloat(paymentAmount);
 
-                // Add payment details with timestamp
-                const paymentDate = new Date().toLocaleString();
-                const paymentDetails = {
-                    amount: paymentAmount,
-                    date: paymentDate
-                };
+                    // Add payment details with timestamp
+                    const paymentDate = new Date().toLocaleString();
+                    const paymentDetails = {
+                        amount: paymentAmount,
+                        date: paymentDate
+                    };
 
-                if (!ticket.paymentHistory) {
-                    ticket.paymentHistory = [];
+                    if (!ticket.paymentHistory) {
+                        ticket.paymentHistory = [];
+                    }
+                    ticket.paymentHistory.push(paymentDetails);
+
+                    // If the ticket is fully paid, update the status
+                    if (ticket.pendingAmount <= 0) {
+                        ticket.status = 'paid'; // Mark as paid only if fully settled
+                        alert("Payment successful! The ticket has been moved to the success page.");
+                    }
+
+                    // Update the ticket in localStorage
+                    tickets[index] = ticket;
+                    localStorage.setItem('tickets', JSON.stringify(tickets));
+                    loadTickets('pending');
+                } else {
+                    alert('Invalid payment amount!');
                 }
-                ticket.paymentHistory.push(paymentDetails);
-
-                if (ticket.pendingAmount <= 0) {
-                    ticket.status = 'paid';
-                    alert("Payment successful! The ticket has been moved to the success page.");
-                }
-
-                tickets[index] = ticket;
-                localStorage.setItem('tickets', JSON.stringify(tickets));
-                loadTickets('pending');
             } else {
-                alert('Invalid payment amount!');
+                // Handle case if somehow a paid ticket is modified or an error occurs
+                alert('This ticket is already marked as paid and cannot be modified.');
             }
         }
 
@@ -312,7 +319,7 @@
             if (ticket.paymentHistory && ticket.paymentHistory.length > 0) {
                 paymentHistoryDiv.innerHTML = '<strong>Payment History:</strong>';
                 ticket.paymentHistory.forEach(payment => {
-                    paymentHistoryDiv.innerHTML += `
+                    paymentHistoryDiv.innerHTML += `  
                         <p>Amount: $${payment.amount} - Date: ${payment.date}</p>
                     `;
                 });
