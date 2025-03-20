@@ -26,15 +26,25 @@
         }
 
         .navbar {
-            width: 100%;
-            background-color: #0044cc;
-            padding: 15px 0;
-            text-align: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1000;
-        }
+    width: 100%;
+    background-color: #54617c;
+    padding: 15px 0;
+    text-align: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    display: flex
+;
+
+.navbar img {
+    height: 31px;
+    margin-right: 20px;
+    position: absolute;
+    left: 100px;
+    background-color: white;
+    border-radius: 236px;
+}
 
         .navbar a {
             color: white;
@@ -52,11 +62,15 @@
 
         .container {
             width: 80%;
+            max-width: 1000px;
             padding: 50px;
             background-color: #fff;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             margin-top: 80px; /* Space for the navbar */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         h1 {
@@ -73,6 +87,10 @@
             margin: 15px 0;
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
         }
 
         .ticket-item p {
@@ -101,6 +119,7 @@
             padding: 10px;
             border-radius: 5px;
             margin-top: 15px;
+            width: 100%;
         }
 
         .payment-history p {
@@ -140,6 +159,9 @@
             border-radius: 8px;
             padding: 20px;
             margin-top: 20px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         .edit-form input {
@@ -152,6 +174,27 @@
 
         .edit-form button {
             margin-top: 10px;
+            width: 48%;
+        }
+
+        .edit-form button[type="button"] {
+            background-color: #f44336;
+        }
+
+        .edit-form button[type="submit"] {
+            background-color: #0044cc;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 90%;
+            }
+
+            .navbar a {
+                font-size: 16px;
+                padding: 8px;
+                margin: 0 10px;
+            }
         }
     </style>
 </head>
@@ -159,6 +202,7 @@
 
     <!-- Navbar with Home, Pending, and Success links -->
     <div class="navbar">
+        <img src="logo.png" alt="Chamber's Tour Logo">
         <a href="index.html">Home</a>
         <a href="pending.html">Pending</a>
         <a href="success.html">Success</a>
@@ -189,7 +233,10 @@
     </div>
 
     <div class="footer">
-        <p>&copy; 2025 Chamber's Tour | <a href="#">Privacy Policy</a> | <a href="#">Contact</a></p>
+        <p>&copy; 2025 Chamber's Tour |
+            <a href="https://www.facebook.com" target="_blank"><i class="fab fa-facebook"></i> Facebook</a>
+            <a href="https://www.google.com" target="_blank"><i class="fab fa-google"></i> Google</a>
+        </p>
     </div>
 
     <script>
