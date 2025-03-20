@@ -135,17 +135,9 @@
             const ticketList = document.getElementById('ticketList');
             ticketList.innerHTML = '';
 
-            tickets.filter(ticket => ticket.status === status).forEach((ticket, index) => {
-                // Ensure the paymentSuccessDate is set properly
-                if (!ticket.paymentSuccessDate) {
-                    ticket.paymentSuccessDate = new Date().toLocaleString(); // Set current date & time
-                    localStorage.setItem('tickets', JSON.stringify(tickets));
-                }
-
+            tickets.filter(ticket => ticket.status === status && ticket.pendingAmount === 0).forEach((ticket, index) => {
                 // If payment is fully completed, update the status
-                if (ticket.pendingAmount === 0) {
-                    ticket.status = 'paid'; // Mark ticket as paid
-                }
+                ticket.status = 'paid'; // Ensure ticket is marked as paid
 
                 const ticketItem = document.createElement('div');
                 ticketItem.classList.add('ticket-item');
