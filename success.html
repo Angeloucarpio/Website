@@ -182,12 +182,6 @@
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[index];
 
-            // Prevent editing of tickets that are already marked as 'success'
-            if (ticket.status === 'success') {
-                alert("This ticket is already successful and cannot be edited.");
-                return;
-            }
-
             // Prompt the user to edit ticket details
             const newTicketPrice = prompt("Edit Ticket Price", ticket.ticketPrice);
             const newQuantity = prompt("Edit Quantity", ticket.quantity);
