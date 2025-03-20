@@ -6,7 +6,7 @@
     <title>Pending Tickets</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
-        /* Same styles as before */
+        /* General Styles */
         * {
             margin: 0;
             padding: 0;
@@ -188,34 +188,21 @@
         </div>
     </div>
 
+
+
     <script>
         let currentEditIndex = null; // To track the ticket being edited
-        let userID = 'user123'; // Assume this is retrieved dynamically (e.g., from login or session)
 
         window.onload = function() {
-            loadUserTickets(userID);
+            loadTickets('pending');
         };
 
-        function loadUserTickets(userID) {
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            let user = users.find(u => u.id === userID);
-
-            if (!user) {
-                // Create a new user if doesn't exist
-                user = { id: userID, tickets: [] };
-                users.push(user);
-                localStorage.setItem('users', JSON.stringify(users));
-            }
-
-            const pendingTickets = user.tickets.filter(ticket => ticket.status === 'pending');
-            displayTickets(pendingTickets);
-        }
-
-        function displayTickets(tickets) {
+        function loadTickets(status) {
+            const tickets = JSON.parse(localStorage.getItem('tickets')) || [];
             const ticketList = document.getElementById('ticketList');
             ticketList.innerHTML = '';
 
-            tickets.forEach((ticket, index) => {
+            tickets.filter(ticket => ticket.status === status).forEach((ticket, index) => {
                 const ticketItem = document.createElement('div');
                 ticketItem.classList.add('ticket-item');
                 ticketItem.innerHTML = `
@@ -237,84 +224,59 @@
         }
 
         function makePayment(index) {
-            const users = JSON.parse(localStorage.getItem('users'));
-            const user = users.find(u => u.id === userID);
-            const ticket = user.tickets[index];
+            const tickets = JSON.parse(localStorage.getItem('tickets'));
+            const ticket = tickets[index];
 
-            // Check if the ticket is pending before making a payment
-            if (ticket.status === 'pending') {
-                const paymentAmount = prompt('Enter payment amount:');
-                
-                if (paymentAmount && parseFloat(paymentAmount) > 0) {
-                    // Only deduct from the pending amount
-                    if (ticket.pendingAmount - parseFloat(paymentAmount) >= 0) {
-                        ticket.pendingAmount -= parseFloat(paymentAmount);
+            const paymentAmount = prompt('Enter payment amount:');
+            if (paymentAmount && parseFloat(paymentAmount) > 0) {
+                ticket.pendingAmount -= parseFloat(paymentAmount);
 
-                        // Add payment details with timestamp
-                        const paymentDate = new Date().toLocaleString();
-                        const paymentDetails = {
-                            amount: paymentAmount,
-                            date: paymentDate
-                        };
+                // Add payment details with timestamp
+                const paymentDate = new Date().toLocaleString();
+                const paymentDetails = {
+                    amount: paymentAmount,
+                    date: paymentDate
+                };
 
-                        if (!ticket.paymentHistory) {
-                            ticket.paymentHistory = [];
-                        }
-                        ticket.paymentHistory.push(paymentDetails);
-
-                        // If the ticket is fully paid, update the status
-                        if (ticket.pendingAmount <= 0) {
-                            ticket.status = 'paid'; // Mark as paid only if fully settled
-                            alert("Payment successful! The ticket has been moved to the success page.");
-                            moveTicketToSuccess(index); // Move ticket to success
-                        }
-
-                        // Update the user data in localStorage
-                        localStorage.setItem('users', JSON.stringify(users));
-                        loadUserTickets(userID);
-                    } else {
-                        alert('Payment exceeds pending amount!');
-                    }
-                } else {
-                    alert('Invalid payment amount!');
+                if (!ticket.paymentHistory) {
+                    ticket.paymentHistory = [];
                 }
+                ticket.paymentHistory.push(paymentDetails);
+
+                if (ticket.pendingAmount <= 0) {
+                    ticket.status = 'paid';
+                    alert("Payment successful! The ticket has been moved to the success page.");
+                }
+
+                tickets[index] = ticket;
+                localStorage.setItem('tickets', JSON.stringify(tickets));
+                loadTickets('pending');
             } else {
-                // Handle case if somehow a paid ticket is modified or an error occurs
-                alert('This ticket is already marked as paid and cannot be modified.');
+                alert('Invalid payment amount!');
             }
         }
 
-        function moveTicketToSuccess(index) {
-            const users = JSON.parse(localStorage.getItem('users'));
-            const user = users.find(u => u.id === userID);
-            const ticket = user.tickets[index];
-
-            // Mark the ticket as paid and move it to success
-            ticket.status = 'paid';
-            localStorage.setItem('users', JSON.stringify(users));
-        }
-
         function deleteTicket(index) {
-            const users = JSON.parse(localStorage.getItem('users'));
-            const user = users.find(u => u.id === userID);
-            user.tickets.splice(index, 1);
-
-            // Update the user data in localStorage
-            localStorage.setItem('users', JSON.stringify(users));
-            loadUserTickets(userID);
+            const tickets = JSON.parse(localStorage.getItem('tickets'));
+            tickets.splice(index, 1);
+            localStorage.setItem('tickets', JSON.stringify(tickets));
+            loadTickets('pending');
         }
 
         function editTicket(index) {
-            const users = JSON.parse(localStorage.getItem('users'));
-            const user = users.find(u => u.id === userID);
-            const ticket = user.tickets[index];
+            const tickets = JSON.parse(localStorage.getItem('tickets'));
+            const ticket = tickets[index];
 
+            // Populate the form with ticket data
             document.getElementById('editName').value = ticket.name;
             document.getElementById('editTicketPrice').value = ticket.ticketPrice;
             document.getElementById('editQuantity').value = ticket.quantity;
             document.getElementById('editDownPayment').value = ticket.downPayment;
 
+            // Store the current ticket index for saving later
             currentEditIndex = index;
+
+            // Show the edit form
             document.getElementById('editForm').style.display = 'block';
         }
 
@@ -325,43 +287,40 @@
         document.getElementById('ticketEditForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
-            const users = JSON.parse(localStorage.getItem('users'));
-            const user = users.find(u => u.id === userID);
-            const ticket = user.tickets[currentEditIndex];
+            const tickets = JSON.parse(localStorage.getItem('tickets'));
+            const ticket = tickets[currentEditIndex];
 
+            // Update ticket data with new values from the form
             ticket.name = document.getElementById('editName').value;
             ticket.ticketPrice = parseFloat(document.getElementById('editTicketPrice').value);
             ticket.quantity = parseInt(document.getElementById('editQuantity').value);
             ticket.downPayment = parseFloat(document.getElementById('editDownPayment').value);
-
-            // Recalculate total and pending amounts
             ticket.totalAmount = ticket.ticketPrice * ticket.quantity;
             ticket.pendingAmount = ticket.totalAmount - ticket.downPayment;
 
-            // Update ticket in localStorage
-            user.tickets[currentEditIndex] = ticket;
-            localStorage.setItem('users', JSON.stringify(users));
-            loadUserTickets(userID);
+            // Save the updated ticket to localStorage
+            tickets[currentEditIndex] = ticket;
+            localStorage.setItem('tickets', JSON.stringify(tickets));
+
+            // Close the form and reload the ticket list
             closeEditForm();
+            loadTickets('pending');
         });
 
         function displayPaymentHistory(ticket, index) {
             const paymentHistoryDiv = document.getElementById(`paymentHistory-${index}`);
-            paymentHistoryDiv.innerHTML = '';
-
             if (ticket.paymentHistory && ticket.paymentHistory.length > 0) {
+                paymentHistoryDiv.innerHTML = '<strong>Payment History:</strong>';
                 ticket.paymentHistory.forEach(payment => {
-                    const paymentItem = document.createElement('p');
-                    paymentItem.innerText = `Paid $${payment.amount} on ${payment.date}`;
-                    paymentHistoryDiv.appendChild(paymentItem);
+                    paymentHistoryDiv.innerHTML += `
+                        <p>Amount: $${payment.amount} - Date: ${payment.date}</p>
+                    `;
                 });
+            } else {
+                paymentHistoryDiv.innerHTML = '<p>No payments made yet.</p>';
             }
         }
     </script>
-
-    <div class="footer">
-        <p>Footer content here</p>
-    </div>
 
 </body>
 </html>
