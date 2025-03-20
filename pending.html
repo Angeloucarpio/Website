@@ -188,8 +188,6 @@
         </div>
     </div>
 
-
-
     <script>
         let currentEditIndex = null; // To track the ticket being edited
 
@@ -302,25 +300,21 @@
             tickets[currentEditIndex] = ticket;
             localStorage.setItem('tickets', JSON.stringify(tickets));
 
-            // Close the form and reload the ticket list
+            // Close the edit form and reload the ticket list
             closeEditForm();
             loadTickets('pending');
         });
 
         function displayPaymentHistory(ticket, index) {
-            const paymentHistoryDiv = document.getElementById(`paymentHistory-${index}`);
-            if (ticket.paymentHistory && ticket.paymentHistory.length > 0) {
-                paymentHistoryDiv.innerHTML = '<strong>Payment History:</strong>';
+            const paymentHistoryContainer = document.getElementById(`paymentHistory-${index}`);
+            if (ticket.paymentHistory) {
                 ticket.paymentHistory.forEach(payment => {
-                    paymentHistoryDiv.innerHTML += `
-                        <p>Amount: $${payment.amount} - Date: ${payment.date}</p>
-                    `;
+                    const paymentItem = document.createElement('p');
+                    paymentItem.innerHTML = `Payment of $${payment.amount} made on ${payment.date}`;
+                    paymentHistoryContainer.appendChild(paymentItem);
                 });
-            } else {
-                paymentHistoryDiv.innerHTML = '<p>No payments made yet.</p>';
             }
         }
     </script>
-
 </body>
 </html>
