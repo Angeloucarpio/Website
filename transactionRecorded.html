@@ -112,78 +112,78 @@
     </div>
 
     <script>
-        window.onload = function() {
-            loadTransactionHistory();
-        };
+      window.onload = function() {
+    loadTransactionHistory();
+};
 
-        function loadTransactionHistory() {
-            const transactionHistory = JSON.parse(localStorage.getItem('transactionHistory')) || [];
-            const transactionList = document.getElementById('transactionList');
-            transactionList.innerHTML = '';
+function loadTransactionHistory() {
+    const transactionHistory = JSON.parse(localStorage.getItem('transactionHistory')) || [];
+    const transactionList = document.getElementById('transactionList');
+    transactionList.innerHTML = '';
 
-            if (transactionHistory.length === 0) {
-                transactionList.innerHTML = '<p>No transactions recorded yet.</p>';
-            } else {
-                transactionHistory.forEach((transaction, index) => {
-                    const transactionItem = document.createElement('div');
-                    transactionItem.classList.add('transaction-item');
-                    transactionItem.innerHTML = `
-                        <div>
-                            <p><strong>Name:</strong> ${transaction.name}</p>
-                            <p><strong>Ticket Price:</strong> $${transaction.ticketPrice}</p>
-                            <p><strong>Quantity:</strong> ${transaction.quantity}</p>
-                            <p><strong>Total Amount:</strong> $${transaction.totalAmount}</p>
-                            <p><strong>Down Payment:</strong> $${transaction.downPayment}</p>
-                            <p><strong>Pending Payment:</strong> $${transaction.pendingAmount}</p>
-                            <p><strong>Payment Success Date:</strong> ${transaction.paymentSuccessDate}</p>
-                        </div>
-                        <div class="action-buttons">
-                            <i class="fas fa-edit" onclick="editTransaction(${index})"></i>
-                            <i class="fas fa-trash" onclick="deleteTransaction(${index})"></i>
-                        </div>
-                    `;
-                    transactionList.appendChild(transactionItem);
-                });
-            }
-        }
+    if (transactionHistory.length === 0) {
+        transactionList.innerHTML = '<p>No transactions recorded yet.</p>';
+    } else {
+        transactionHistory.forEach((transaction, index) => {
+            const transactionItem = document.createElement('div');
+            transactionItem.classList.add('transaction-item');
+            transactionItem.innerHTML = `
+                <div>
+                    <p><strong>Name:</strong> ${transaction.name}</p>
+                    <p><strong>Ticket Price:</strong> $${transaction.ticketPrice}</p>
+                    <p><strong>Quantity:</strong> ${transaction.quantity}</p>
+                    <p><strong>Total Amount:</strong> $${transaction.totalAmount}</p>
+                    <p><strong>Down Payment:</strong> $${transaction.downPayment}</p>
+                    <p><strong>Pending Payment:</strong> $${transaction.pendingAmount}</p>
+                    <p><strong>Payment Success Date:</strong> ${transaction.paymentSuccessDate}</p>
+                </div>
+                <div class="action-buttons">
+                    <i class="fas fa-edit" onclick="editTransaction(${index})"></i>
+                    <i class="fas fa-trash" onclick="deleteTransaction(${index})"></i>
+                </div>
+            `;
+            transactionList.appendChild(transactionItem);
+        });
+    }
+}
 
-        function deleteTransaction(index) {
-            const transactionHistory = JSON.parse(localStorage.getItem('transactionHistory')) || [];
-            transactionHistory.splice(index, 1); // Remove the transaction from the array
-            localStorage.setItem('transactionHistory', JSON.stringify(transactionHistory)); // Update localStorage
-            loadTransactionHistory(); // Reload the transaction list
-        }
+function deleteTransaction(index) {
+    const transactionHistory = JSON.parse(localStorage.getItem('transactionHistory')) || [];
+    transactionHistory.splice(index, 1); // Remove the transaction from the array
+    localStorage.setItem('transactionHistory', JSON.stringify(transactionHistory)); // Update localStorage
+    loadTransactionHistory(); // Reload the transaction list
+}
 
-        function editTransaction(index) {
-            const transactionHistory = JSON.parse(localStorage.getItem('transactionHistory')) || [];
-            const transaction = transactionHistory[index];
+function editTransaction(index) {
+    const transactionHistory = JSON.parse(localStorage.getItem('transactionHistory')) || [];
+    const transaction = transactionHistory[index];
 
-            // Prompt the user to edit ticket details
-            const newTicketPrice = prompt("Edit Ticket Price", transaction.ticketPrice);
-            const newQuantity = prompt("Edit Quantity", transaction.quantity);
-            const newDownPayment = prompt("Edit Down Payment", transaction.downPayment);
+    // Prompt the user to edit ticket details
+    const newTicketPrice = prompt("Edit Ticket Price", transaction.ticketPrice);
+    const newQuantity = prompt("Edit Quantity", transaction.quantity);
+    const newDownPayment = prompt("Edit Down Payment", transaction.downPayment);
 
-            // If user inputs valid values, update the transaction
-            if (newTicketPrice && newQuantity && newDownPayment) {
-                transaction.ticketPrice = parseFloat(newTicketPrice);
-                transaction.quantity = parseInt(newQuantity);
-                transaction.downPayment = parseFloat(newDownPayment);
-                transaction.totalAmount = transaction.ticketPrice * transaction.quantity;
-                transaction.pendingAmount = transaction.totalAmount - transaction.downPayment;
+    // If user inputs valid values, update the transaction
+    if (newTicketPrice && newQuantity && newDownPayment) {
+        transaction.ticketPrice = parseFloat(newTicketPrice);
+        transaction.quantity = parseInt(newQuantity);
+        transaction.downPayment = parseFloat(newDownPayment);
+        transaction.totalAmount = transaction.ticketPrice * transaction.quantity;
+        transaction.pendingAmount = transaction.totalAmount - transaction.downPayment;
 
-                // Update paymentSuccessDate to current date & time if edited
-                transaction.paymentSuccessDate = new Date().toLocaleString();
+        // Update paymentSuccessDate to current date & time when edited
+        transaction.paymentSuccessDate = new Date().toLocaleString();
 
-                // Update the transaction in local storage
-                transactionHistory[index] = transaction;
-                localStorage.setItem('transactionHistory', JSON.stringify(transactionHistory));
+        // Update the transaction in local storage
+        transactionHistory[index] = transaction;
+        localStorage.setItem('transactionHistory', JSON.stringify(transactionHistory));
 
-                // Reload the transaction list
-                loadTransactionHistory();
-            } else {
-                alert("Invalid input values.");
-            }
-        }
+        // Reload the transaction list
+        loadTransactionHistory();
+    } else {
+        alert("Invalid input values.");
+    }
+}
     </script>
 </body>
 </html>
