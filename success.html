@@ -91,7 +91,7 @@
 </head>
 <body>
 
-    <!-- Navbar with Home and Pending links -->
+
     <div class="navbar">
         <a href="index.html">Home</a>
         <a href="pending.html">Pending</a>
@@ -114,7 +114,7 @@
             ticketList.innerHTML = '';
 
             tickets.filter(ticket => ticket.status === status).forEach((ticket, index) => {
-                // Ensure the paymentSuccessDate is set properly
+               
                 if (!ticket.paymentSuccessDate) {
                     ticket.paymentSuccessDate = new Date().toLocaleString(); // Set current date & time
                     localStorage.setItem('tickets', JSON.stringify(tickets));
@@ -141,21 +141,20 @@
 
         function deleteTicket(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
-            tickets.splice(index, 1); // Remove ticket from the array
-            localStorage.setItem('tickets', JSON.stringify(tickets)); // Update localStorage
-            loadTickets('paid'); // Reload the success tickets list
+            tickets.splice(index, 1); 
+            localStorage.setItem('tickets', JSON.stringify(tickets)); 
+            loadTickets('paid'); // Reload the success tickets lis
         }
 
         function editTicket(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[index];
 
-            // Prompt the user to edit ticket details
             const newTicketPrice = prompt("Edit Ticket Price", ticket.ticketPrice);
             const newQuantity = prompt("Edit Quantity", ticket.quantity);
             const newDownPayment = prompt("Edit Down Payment", ticket.downPayment);
 
-            // If user inputs valid values, update the ticket
+           
             if (newTicketPrice && newQuantity && newDownPayment) {
                 ticket.ticketPrice = parseFloat(newTicketPrice);
                 ticket.quantity = parseInt(newQuantity);
@@ -163,7 +162,7 @@
                 ticket.totalAmount = ticket.ticketPrice * ticket.quantity;
                 ticket.pendingAmount = ticket.totalAmount - ticket.downPayment;
 
-                // Update paymentSuccessDate to current date & time if edited
+        
                 ticket.paymentSuccessDate = new Date().toLocaleString();
 
                 // Update the ticket in local storage
