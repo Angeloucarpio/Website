@@ -190,16 +190,16 @@
 
     <script>
         let currentEditIndex = null; // To track the ticket being edited
-
+    
         window.onload = function() {
             loadTickets('pending');
         };
-
+    
         function loadTickets(status) {
             const tickets = JSON.parse(localStorage.getItem('tickets')) || [];
             const ticketList = document.getElementById('ticketList');
             ticketList.innerHTML = '';
-
+    
             tickets.filter(ticket => ticket.status === status).forEach((ticket, index) => {
                 const ticketItem = document.createElement('div');
                 ticketItem.classList.add('ticket-item');
@@ -220,97 +220,110 @@
                 displayPaymentHistory(ticket, index);
             });
         }
-
+    
         function makePayment(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[index];
-
+    
             if (ticket.status === 'paid') {
                 alert('This ticket has already been paid!');
                 return;
             }
-
+    
             const paymentAmount = prompt('Enter payment amount:');
             if (paymentAmount && parseFloat(paymentAmount) > 0) {
                 ticket.pendingAmount -= parseFloat(paymentAmount);
-
+    
                 // Add payment details with timestamp
                 const paymentDate = new Date().toLocaleString();
                 const paymentDetails = {
                     amount: paymentAmount,
                     date: paymentDate
                 };
-
+    
                 if (!ticket.paymentHistory) {
                     ticket.paymentHistory = [];
                 }
                 ticket.paymentHistory.push(paymentDetails);
-
+    
                 if (ticket.pendingAmount <= 0) {
                     ticket.status = 'paid';
                     alert("Payment successful! The ticket has been moved to the success page.");
+                    moveTicketToSuccess(ticket, index);
                 }
-
+    
                 tickets[index] = ticket;
                 localStorage.setItem('tickets', JSON.stringify(tickets));
-                loadTickets('pending');
+                loadTickets('pending');  // Only reload the "pending" tickets
             } else {
                 alert('Invalid payment amount!');
             }
         }
-
+    
+        function moveTicketToSuccess(ticket, index) {
+            const tickets = JSON.parse(localStorage.getItem('tickets'));
+            ticket.status = 'success';
+            // Remove ticket from pending list and add it to success list
+            tickets.splice(index, 1);
+            tickets.push(ticket);
+            localStorage.setItem('tickets', JSON.stringify(tickets));
+    
+            // Update the "success" tickets
+            loadTickets('success');
+        }
+    
         function deleteTicket(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             tickets.splice(index, 1);
             localStorage.setItem('tickets', JSON.stringify(tickets));
-            loadTickets('pending');
+            loadTickets('pending'); // Reload only pending tickets
         }
-
+    
         function editTicket(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[index];
-
+    
             // Prevent editing of already paid tickets
             if (ticket.status === 'paid') {
                 alert('This ticket is already paid and cannot be edited.');
                 return;
             }
-
+    
             // Populate the form with ticket details
             document.getElementById('editName').value = ticket.name;
             document.getElementById('editTicketPrice').value = ticket.ticketPrice;
             document.getElementById('editQuantity').value = ticket.quantity;
             document.getElementById('editDownPayment').value = ticket.downPayment;
-
+    
             currentEditIndex = index;
             document.getElementById('editForm').style.display = 'block';
         }
-
+    
         function closeEditForm() {
             document.getElementById('editForm').style.display = 'none';
             currentEditIndex = null;
         }
-
+    
         document.getElementById('ticketEditForm').addEventListener('submit', function(event) {
             event.preventDefault();
-
+    
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[currentEditIndex];
-
+    
             ticket.name = document.getElementById('editName').value;
             ticket.ticketPrice = parseFloat(document.getElementById('editTicketPrice').value);
             ticket.quantity = parseInt(document.getElementById('editQuantity').value);
             ticket.downPayment = parseFloat(document.getElementById('editDownPayment').value);
             ticket.totalAmount = ticket.ticketPrice * ticket.quantity;
             ticket.pendingAmount = ticket.totalAmount - ticket.downPayment;
-
+    
             tickets[currentEditIndex] = ticket;
             localStorage.setItem('tickets', JSON.stringify(tickets));
-
+    
             closeEditForm();
-            loadTickets('pending');
+            loadTickets('pending'); // Reload only the "pending" tickets
         });
-
+    
         function displayPaymentHistory(ticket, index) {
             const paymentHistoryContainer = document.getElementById(`paymentHistory-${index}`);
             paymentHistoryContainer.innerHTML = '';
@@ -322,6 +335,6 @@
                 });
             }
         }
-    </script>
+    </script>    
 </body>
 </html>
