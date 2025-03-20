@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transaction Recorded</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -70,11 +71,31 @@
             margin: 10px 0;
             padding: 15px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .transaction-item p {
             margin: 5px 0;
+            flex: 1;
         }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-buttons i {
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .action-buttons i:hover {
+            color: #d32f2f;
+        }
+
     </style>
 </head>
 <body>
@@ -103,20 +124,64 @@
             if (transactionHistory.length === 0) {
                 transactionList.innerHTML = '<p>No transactions recorded yet.</p>';
             } else {
-                transactionHistory.forEach(transaction => {
+                transactionHistory.forEach((transaction, index) => {
                     const transactionItem = document.createElement('div');
                     transactionItem.classList.add('transaction-item');
                     transactionItem.innerHTML = `
-                        <p><strong>Name:</strong> ${transaction.name}</p>
-                        <p><strong>Ticket Price:</strong> $${transaction.ticketPrice}</p>
-                        <p><strong>Quantity:</strong> ${transaction.quantity}</p>
-                        <p><strong>Total Amount:</strong> $${transaction.totalAmount}</p>
-                        <p><strong>Down Payment:</strong> $${transaction.downPayment}</p>
-                        <p><strong>Pending Payment:</strong> $${transaction.pendingAmount}</p>
-                        <div><strong>Payment Success Date:</strong> ${transaction.paymentSuccessDate}</div>
+                        <div>
+                            <p><strong>Name:</strong> ${transaction.name}</p>
+                            <p><strong>Ticket Price:</strong> $${transaction.ticketPrice}</p>
+                            <p><strong>Quantity:</strong> ${transaction.quantity}</p>
+                            <p><strong>Total Amount:</strong> $${transaction.totalAmount}</p>
+                            <p><strong>Down Payment:</strong> $${transaction.downPayment}</p>
+                            <p><strong>Pending Payment:</strong> $${transaction.pendingAmount}</p>
+                            <p><strong>Payment Success Date:</strong> ${transaction.paymentSuccessDate}</p>
+                        </div>
+                        <div class="action-buttons">
+                            <i class="fas fa-edit" onclick="editTransaction(${index})"></i>
+                            <i class="fas fa-trash" onclick="deleteTransaction(${index})"></i>
+                        </div>
                     `;
                     transactionList.appendChild(transactionItem);
                 });
+            }
+        }
+
+        function deleteTransaction(index) {
+            const transactionHistory = JSON.parse(localStorage.getItem('transactionHistory')) || [];
+            transactionHistory.splice(index, 1); // Remove the transaction from the array
+            localStorage.setItem('transactionHistory', JSON.stringify(transactionHistory)); // Update localStorage
+            loadTransactionHistory(); // Reload the transaction list
+        }
+
+        function editTransaction(index) {
+            const transactionHistory = JSON.parse(localStorage.getItem('transactionHistory')) || [];
+            const transaction = transactionHistory[index];
+
+            // Prompt the user to edit ticket details
+            const newTicketPrice = prompt("Edit Ticket Price", transaction.ticketPrice);
+            const newQuantity = prompt("Edit Quantity", transaction.quantity);
+            const newDownPayment = prompt("Edit Down Payment", transaction.downPayment);
+
+            // If user inputs valid values, update the transaction
+            if (newTicketPrice && newQuantity && newDownPayment) {
+                transaction.ticketPrice = parseFloat(newTicketPrice);
+                transaction.quantity = parseInt(newQuantity);
+                transaction.downPayment = parseFloat(newDownPayment);
+                transaction.totalAmount = transaction.ticketPrice * transaction.quantity;
+                transaction.pendingAmount = transaction.totalAmount - transaction.downPayment;
+
+                // Update paymentSuccessDate to current date & time if edited
+                transaction.paymentSuccessDate = new Date().toLocaleString();
+
+                // Update the transaction in local storage
+                transactionHistory[index] = transaction;
+                localStorage.setItem('transactionHistory', JSON.stringify(transactionHistory));
+
+                // Reload the transaction list
+                loadTransactionHistory();
+            } else {
+                alert("Invalid input values.");
             }
         }
     </script>
