@@ -142,6 +142,11 @@
                     localStorage.setItem('tickets', JSON.stringify(tickets));
                 }
 
+                // If payment is fully completed, update the status
+                if (ticket.pendingAmount === 0) {
+                    ticket.status = 'paid'; // Mark ticket as paid
+                }
+
                 const ticketItem = document.createElement('div');
                 ticketItem.classList.add('ticket-item');
                 ticketItem.innerHTML = `
