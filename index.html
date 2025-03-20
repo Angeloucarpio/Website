@@ -92,7 +92,7 @@
             display: inline-block;
         }
 
-        input, select {
+        input {
             padding: 12px;
             font-size: 16px;
             width: 100%;
@@ -162,40 +162,59 @@
     </div>
 
     <script>
+        // Listen for form submission
         document.getElementById('tourForm').addEventListener('submit', function (e) {
             e.preventDefault();
+            
+            // Get form values
             const name = document.getElementById('name').value;
             const ticketPrice = parseFloat(document.getElementById('ticketPrice').value);
             const quantity = parseInt(document.getElementById('quantity').value);
-            const downPayment = parseFloat(document.getElementById('downPayment').value);
+            const downPaymentField = document.getElementById('downPayment');
             const totalAmount = ticketPrice * quantity;
 
+            // If "Full Payment" is selected, automatically set the down payment to the total amount
+            const paymentOption = document.querySelector('input[name="paymentOption"]:checked').value;
+            if (paymentOption === 'full') {
+                downPaymentField.value = totalAmount;  // Set down payment to full amount
+            }
+
+            const downPayment = parseFloat(downPaymentField.value);
+
+            // Check if down payment exceeds total amount
             if (downPayment > totalAmount) {
                 alert('Down payment exceeds total amount!');
                 return;
             }
 
-            const paymentOption = document.querySelector('input[name="paymentOption"]:checked').value;
-            let status = '';
-            if (paymentOption === 'full' || downPayment >= totalAmount) {
-                status = 'paid';
-                // Redirect to success.html if full payment is made
-                if (paymentOption === 'full') {
-                    window.location.href = 'success.html';
-                    return; // Stop further execution
-                }
-            } else {
-                status = 'pending';
-            }
+            // Set status and determine if ticket is fully paid
+            const status = downPayment >= totalAmount ? 'paid' : 'pending';
 
-            const ticket = { name, ticketPrice, quantity, downPayment, totalAmount, pendingAmount: totalAmount - downPayment, status, date: new Date().toLocaleString() };
+            // Create ticket object
+            const ticket = { 
+                name, 
+                ticketPrice, 
+                quantity, 
+                downPayment, 
+                totalAmount, 
+                pendingAmount: totalAmount - downPayment, 
+                status, 
+                date: new Date().toLocaleString() 
+            };
 
+            // Save ticket to localStorage
             const tickets = JSON.parse(localStorage.getItem('tickets')) || [];
             tickets.push(ticket);
             localStorage.setItem('tickets', JSON.stringify(tickets));
 
+            // Alert user and reset form
             alert('Ticket successfully added!');
             document.getElementById('tourForm').reset();
+
+            // Redirect to success page if payment is full
+            if (status === 'paid') {
+                window.location.href = 'success.html';
+            }
         });
     </script>
 </body>
