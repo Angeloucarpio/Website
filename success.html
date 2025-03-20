@@ -136,6 +136,11 @@
             ticketList.innerHTML = '';
 
             tickets.filter(ticket => ticket.status === status && ticket.pendingAmount === 0).forEach((ticket, index) => {
+                // Ensure paymentSuccessDate is set to the current date if it's undefined
+                if (!ticket.paymentSuccessDate) {
+                    ticket.paymentSuccessDate = new Date().toLocaleString(); // Set payment date if not already set
+                }
+
                 // If payment is fully completed, update the status
                 ticket.status = 'paid'; // Ensure ticket is marked as paid
 
