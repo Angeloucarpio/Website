@@ -91,9 +91,8 @@
 </head>
 <body>
 
-
+    <!-- Navbar with Home and Pending links -->
     <div class="navbar">
-        <img src="logo.png" alt="Chamber's Tour Logo">
         <a href="index.html">Home</a>
         <a href="pending.html">Pending</a>
         <a href="success.html">Success</a>
@@ -103,12 +102,7 @@
         <h1>Success Tickets</h1>
         <div id="ticketList"></div>
     </div>
-    <div class="footer">
-        <p>&copy; 2025 Chamber's Tour |
-            <a href="https://www.facebook.com" target="_blank"><i class="fab fa-facebook"></i> Facebook</a>
-            <a href="https://www.google.com" target="_blank"><i class="fab fa-google"></i> Google</a>
-        </p>
-    </div>
+
     <script>
         window.onload = function() {
             loadTickets('paid');
@@ -120,7 +114,7 @@
             ticketList.innerHTML = '';
 
             tickets.filter(ticket => ticket.status === status).forEach((ticket, index) => {
-               
+                // Ensure the paymentSuccessDate is set properly
                 if (!ticket.paymentSuccessDate) {
                     ticket.paymentSuccessDate = new Date().toLocaleString(); // Set current date & time
                     localStorage.setItem('tickets', JSON.stringify(tickets));
@@ -147,20 +141,21 @@
 
         function deleteTicket(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
-            tickets.splice(index, 1); 
-            localStorage.setItem('tickets', JSON.stringify(tickets)); 
-            loadTickets('paid'); // Reload the success tickets lis
+            tickets.splice(index, 1); // Remove ticket from the array
+            localStorage.setItem('tickets', JSON.stringify(tickets)); // Update localStorage
+            loadTickets('paid'); // Reload the success tickets list
         }
 
         function editTicket(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[index];
 
+            // Prompt the user to edit ticket details
             const newTicketPrice = prompt("Edit Ticket Price", ticket.ticketPrice);
             const newQuantity = prompt("Edit Quantity", ticket.quantity);
             const newDownPayment = prompt("Edit Down Payment", ticket.downPayment);
 
-           
+            // If user inputs valid values, update the ticket
             if (newTicketPrice && newQuantity && newDownPayment) {
                 ticket.ticketPrice = parseFloat(newTicketPrice);
                 ticket.quantity = parseInt(newQuantity);
@@ -168,7 +163,7 @@
                 ticket.totalAmount = ticket.ticketPrice * ticket.quantity;
                 ticket.pendingAmount = ticket.totalAmount - ticket.downPayment;
 
-        
+                // Update paymentSuccessDate to current date & time if edited
                 ticket.paymentSuccessDate = new Date().toLocaleString();
 
                 // Update the ticket in local storage
