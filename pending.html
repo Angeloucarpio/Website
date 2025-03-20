@@ -188,6 +188,8 @@
         </div>
     </div>
 
+
+
     <script>
         let currentEditIndex = null; // To track the ticket being edited
 
@@ -210,9 +212,9 @@
                     <p><strong>Total Amount:</strong> $${ticket.totalAmount}</p>
                     <p><strong>Down Payment:</strong> $${ticket.downPayment}</p>
                     <p><strong>Pending Payment:</strong> $${ticket.pendingAmount}</p>
-                    <button onclick="makePayment(${index})" ${ticket.status === 'paid' ? 'disabled' : ''}>Make Payment</button>
+                    <button onclick="makePayment(${index})">Make Payment</button>
                     <button onclick="deleteTicket(${index})">Delete</button>
-                    <button onclick="editTicket(${index})" ${ticket.status === 'paid' ? 'disabled' : ''}>Edit</button>
+                    <button onclick="editTicket(${index})">Edit</button>
                     <div id="paymentHistory-${index}" class="payment-history"></div>
                     <div class="pending-date"><strong>Pending since:</strong> ${ticket.pendingDate}</div>
                 `;
@@ -224,11 +226,6 @@
         function makePayment(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[index];
-
-            if (ticket.status === 'paid') {
-                alert('This ticket has already been paid!');
-                return;
-            }
 
             const paymentAmount = prompt('Enter payment amount:');
             if (paymentAmount && parseFloat(paymentAmount) > 0) {
@@ -270,25 +267,21 @@
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[index];
 
-            // Prevent editing of already paid tickets
-            if (ticket.status === 'paid') {
-                alert('This ticket is already paid and cannot be edited.');
-                return;
-            }
-
-            // Populate the form with ticket details
+            // Populate the form with ticket data
             document.getElementById('editName').value = ticket.name;
             document.getElementById('editTicketPrice').value = ticket.ticketPrice;
             document.getElementById('editQuantity').value = ticket.quantity;
             document.getElementById('editDownPayment').value = ticket.downPayment;
 
+            // Store the current ticket index for saving later
             currentEditIndex = index;
+
+            // Show the edit form
             document.getElementById('editForm').style.display = 'block';
         }
 
         function closeEditForm() {
             document.getElementById('editForm').style.display = 'none';
-            currentEditIndex = null;
         }
 
         document.getElementById('ticketEditForm').addEventListener('submit', function(event) {
@@ -297,6 +290,7 @@
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[currentEditIndex];
 
+            // Update ticket data with new values from the form
             ticket.name = document.getElementById('editName').value;
             ticket.ticketPrice = parseFloat(document.getElementById('editTicketPrice').value);
             ticket.quantity = parseInt(document.getElementById('editQuantity').value);
@@ -304,24 +298,29 @@
             ticket.totalAmount = ticket.ticketPrice * ticket.quantity;
             ticket.pendingAmount = ticket.totalAmount - ticket.downPayment;
 
+            // Save the updated ticket to localStorage
             tickets[currentEditIndex] = ticket;
             localStorage.setItem('tickets', JSON.stringify(tickets));
 
+            // Close the form and reload the ticket list
             closeEditForm();
             loadTickets('pending');
         });
 
         function displayPaymentHistory(ticket, index) {
-            const paymentHistoryContainer = document.getElementById(`paymentHistory-${index}`);
-            paymentHistoryContainer.innerHTML = '';
+            const paymentHistoryDiv = document.getElementById(`paymentHistory-${index}`);
             if (ticket.paymentHistory && ticket.paymentHistory.length > 0) {
+                paymentHistoryDiv.innerHTML = '<strong>Payment History:</strong>';
                 ticket.paymentHistory.forEach(payment => {
-                    const paymentItem = document.createElement('p');
-                    paymentItem.innerHTML = `Paid $${payment.amount} on ${payment.date}`;
-                    paymentHistoryContainer.appendChild(paymentItem);
+                    paymentHistoryDiv.innerHTML += `
+                        <p>Amount: $${payment.amount} - Date: ${payment.date}</p>
+                    `;
                 });
+            } else {
+                paymentHistoryDiv.innerHTML = '<p>No payments made yet.</p>';
             }
         }
     </script>
+
 </body>
 </html>

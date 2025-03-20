@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Success Tickets</title>
+    <title>Transaction Recorded</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -94,20 +94,6 @@
             color: #333;
         }
 
-        .ticket-item button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-right: 5px;
-            transition: background 0.3s;
-        }
-
-        .ticket-item button:hover {
-            background-color: #0056b3;
-        }
     </style>
 </head>
 <body>
@@ -118,27 +104,21 @@
     </div>
 
     <div class="container">
-        <h1>Success Tickets</h1>
-        <div id="ticketList"></div>
+        <h1>Transaction Recorded</h1>
+        <div id="transactionList"></div>
     </div>
 
     <script>
         window.onload = function() {
-            loadTickets('paid');
+            loadTransactions();
         };
 
-        function loadTickets(status) {
-            const tickets = JSON.parse(localStorage.getItem('tickets')) || [];
-            const ticketList = document.getElementById('ticketList');
-            ticketList.innerHTML = '';
+        function loadTransactions() {
+            const transactions = JSON.parse(localStorage.getItem('transactionHistory')) || [];
+            const transactionList = document.getElementById('transactionList');
+            transactionList.innerHTML = '';
 
-            tickets.filter(ticket => ticket.status === status).forEach((ticket, index) => {
-                // Ensure the paymentSuccessDate is set properly
-                if (!ticket.paymentSuccessDate) {
-                    ticket.paymentSuccessDate = new Date().toLocaleString(); // Set current date & time
-                    localStorage.setItem('tickets', JSON.stringify(tickets));
-                }
-
+            transactions.forEach((ticket) => {
                 const ticketItem = document.createElement('div');
                 ticketItem.classList.add('ticket-item');
                 ticketItem.innerHTML = `
@@ -155,10 +135,8 @@
                         <strong>Payment History:</strong>
                         ${displayPaymentHistory(ticket.paymentHistory)}
                     </div>
-                    <button onclick="editTicket(${index})">Edit</button>
-                    <button onclick="deleteTicket(${index})">Delete</button>
                 `;
-                ticketList.appendChild(ticketItem);
+                transactionList.appendChild(ticketItem);
             });
         }
 
@@ -169,51 +147,6 @@
             return paymentHistory.map(payment => `
                 <p>Amount: $${payment.amount} - Date: ${payment.date}</p>
             `).join('');
-        }
-
-        function deleteTicket(index) {
-    const tickets = JSON.parse(localStorage.getItem('tickets'));
-    const ticket = tickets.splice(index, 1)[0]; // Remove ticket from the array
-
-    // Store the ticket in the TransactionRecorded page
-    let transactionHistory = JSON.parse(localStorage.getItem('transactionHistory')) || [];
-    transactionHistory.push(ticket);
-    localStorage.setItem('transactionHistory', JSON.stringify(transactionHistory)); // Update transaction history
-
-    localStorage.setItem('tickets', JSON.stringify(tickets)); // Update localStorage
-    loadTickets('paid'); // Reload the success tickets list
-}
-
-
-        function editTicket(index) {
-            const tickets = JSON.parse(localStorage.getItem('tickets'));
-            const ticket = tickets[index];
-
-            // Prompt the user to edit ticket details
-            const newTicketPrice = prompt("Edit Ticket Price", ticket.ticketPrice);
-            const newQuantity = prompt("Edit Quantity", ticket.quantity);
-            const newDownPayment = prompt("Edit Down Payment", ticket.downPayment);
-
-            // If user inputs valid values, update the ticket
-            if (newTicketPrice && newQuantity && newDownPayment) {
-                ticket.ticketPrice = parseFloat(newTicketPrice);
-                ticket.quantity = parseInt(newQuantity);
-                ticket.downPayment = parseFloat(newDownPayment);
-                ticket.totalAmount = ticket.ticketPrice * ticket.quantity;
-                ticket.pendingAmount = ticket.totalAmount - ticket.downPayment;
-
-                // Update paymentSuccessDate to current date & time if edited
-                ticket.paymentSuccessDate = new Date().toLocaleString();
-
-                // Update the ticket in local storage
-                tickets[index] = ticket;
-                localStorage.setItem('tickets', JSON.stringify(tickets));
-
-                // Reload the success tickets list
-                loadTickets('paid');
-            } else {
-                alert("Invalid input values.");
-            }
         }
     </script>
 
