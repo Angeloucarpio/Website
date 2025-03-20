@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transaction Recorded</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -61,7 +60,7 @@
             margin-bottom: 20px;
         }
 
-        .ticket-item {
+        .transaction-item {
             background-color: #e3f2fd;
             border-left: 5px solid #007bff;
             border-radius: 8px;
@@ -70,30 +69,9 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        .ticket-item p {
+        .transaction-item p {
             margin: 5px 0;
         }
-
-        .payment-date {
-            font-size: 14px;
-            color: #00796b;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        .payment-history {
-            margin-top: 10px;
-            background-color: #e1f5fe;
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        .payment-history p {
-            margin: 5px 0;
-            font-size: 14px;
-            color: #333;
-        }
-
     </style>
 </head>
 <body>
@@ -101,6 +79,7 @@
         <a href="index.html">Home</a>
         <a href="pending.html">Pending</a>
         <a href="success.html">Success</a>
+        <a href="transactionRecorded.html">Transaction Record</a>
     </div>
 
     <div class="container">
@@ -110,45 +89,33 @@
 
     <script>
         window.onload = function() {
-            loadTransactions();
+            loadTransactionHistory();
         };
 
-        function loadTransactions() {
-            const transactions = JSON.parse(localStorage.getItem('transactionHistory')) || [];
+        function loadTransactionHistory() {
+            const transactionHistory = JSON.parse(localStorage.getItem('transactionHistory')) || [];
             const transactionList = document.getElementById('transactionList');
             transactionList.innerHTML = '';
 
-            transactions.forEach((ticket) => {
-                const ticketItem = document.createElement('div');
-                ticketItem.classList.add('ticket-item');
-                ticketItem.innerHTML = `
-                    <p><strong>Name:</strong> ${ticket.name}</p>
-                    <p><strong>Ticket Price:</strong> $${ticket.ticketPrice}</p>
-                    <p><strong>Quantity:</strong> ${ticket.quantity}</p>
-                    <p><strong>Total Amount:</strong> $${ticket.totalAmount}</p>
-                    <p><strong>Down Payment:</strong> $${ticket.downPayment}</p>
-                    <p><strong>Pending Payment:</strong> $${ticket.pendingAmount}</p>
-                    <div class="payment-date">
-                        <strong>Payment Success Date:</strong> ${ticket.paymentSuccessDate}
-                    </div>
-                    <div class="payment-history">
-                        <strong>Payment History:</strong>
-                        ${displayPaymentHistory(ticket.paymentHistory)}
-                    </div>
-                `;
-                transactionList.appendChild(ticketItem);
-            });
-        }
-
-        function displayPaymentHistory(paymentHistory) {
-            if (!paymentHistory || paymentHistory.length === 0) {
-                return '<p>No payments made yet.</p>';
+            if (transactionHistory.length === 0) {
+                transactionList.innerHTML = '<p>No transactions recorded yet.</p>';
+            } else {
+                transactionHistory.forEach(transaction => {
+                    const transactionItem = document.createElement('div');
+                    transactionItem.classList.add('transaction-item');
+                    transactionItem.innerHTML = `
+                        <p><strong>Name:</strong> ${transaction.name}</p>
+                        <p><strong>Ticket Price:</strong> $${transaction.ticketPrice}</p>
+                        <p><strong>Quantity:</strong> ${transaction.quantity}</p>
+                        <p><strong>Total Amount:</strong> $${transaction.totalAmount}</p>
+                        <p><strong>Down Payment:</strong> $${transaction.downPayment}</p>
+                        <p><strong>Pending Payment:</strong> $${transaction.pendingAmount}</p>
+                        <div><strong>Payment Success Date:</strong> ${transaction.paymentSuccessDate}</div>
+                    `;
+                    transactionList.appendChild(transactionItem);
+                });
             }
-            return paymentHistory.map(payment => `
-                <p>Amount: $${payment.amount} - Date: ${payment.date}</p>
-            `).join('');
         }
     </script>
-
 </body>
 </html>
