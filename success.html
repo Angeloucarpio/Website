@@ -81,6 +81,19 @@
             margin-top: 10px;
         }
 
+        .payment-history {
+            margin-top: 10px;
+            background-color: #e1f5fe;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .payment-history p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #333;
+        }
+
         .ticket-item button {
             background-color: #007bff;
             color: white;
@@ -108,6 +121,7 @@
         <h1>Success Tickets</h1>
         <div id="ticketList"></div>
     </div>
+
     <script>
         window.onload = function() {
             loadTickets('paid');
@@ -137,11 +151,24 @@
                     <div class="payment-date">
                         <strong>Payment Success Date:</strong> ${ticket.paymentSuccessDate}
                     </div>
+                    <div class="payment-history">
+                        <strong>Payment History:</strong>
+                        ${displayPaymentHistory(ticket.paymentHistory)}
+                    </div>
                     <button onclick="editTicket(${index})">Edit</button>
                     <button onclick="deleteTicket(${index})">Delete</button>
                 `;
                 ticketList.appendChild(ticketItem);
             });
+        }
+
+        function displayPaymentHistory(paymentHistory) {
+            if (!paymentHistory || paymentHistory.length === 0) {
+                return '<p>No payments made yet.</p>';
+            }
+            return paymentHistory.map(payment => `
+                <p>Amount: $${payment.amount} - Date: ${payment.date}</p>
+            `).join('');
         }
 
         function deleteTicket(index) {
