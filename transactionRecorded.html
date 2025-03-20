@@ -135,7 +135,7 @@ function loadTransactionHistory() {
                     <p><strong>Total Amount:</strong> $${transaction.totalAmount}</p>
                     <p><strong>Down Payment:</strong> $${transaction.downPayment}</p>
                     <p><strong>Pending Payment:</strong> $${transaction.pendingAmount}</p>
-                    <p><strong>Payment Success Date:</strong> ${transaction.paymentSuccessDate}</p>
+                    <p><strong>Payment Success Date:</strong> ${transaction.paymentSuccessDate || 'Not available'}</p>
                 </div>
                 <div class="action-buttons">
                     <i class="fas fa-edit" onclick="editTransaction(${index})"></i>
