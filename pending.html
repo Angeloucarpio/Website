@@ -6,7 +6,7 @@
     <title>Pending Tickets</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
-        /* General Styles */
+        /* Same styles as before */
         * {
             margin: 0;
             padding: 0;
@@ -248,6 +248,7 @@
                     if (ticket.pendingAmount <= 0) {
                         ticket.status = 'paid'; // Mark as paid only if fully settled
                         alert("Payment successful! The ticket has been moved to the success page.");
+                        moveTicketToSuccess(index); // Move ticket to success
                     }
 
                     // Update the ticket in localStorage
@@ -263,6 +264,15 @@
             }
         }
 
+        function moveTicketToSuccess(index) {
+            const tickets = JSON.parse(localStorage.getItem('tickets'));
+            const ticket = tickets[index];
+
+            // Mark the ticket as paid and move it to success
+            ticket.status = 'paid';
+            localStorage.setItem('tickets', JSON.stringify(tickets));
+        }
+
         function deleteTicket(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             tickets.splice(index, 1);
@@ -274,16 +284,12 @@
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[index];
 
-            // Populate the form with ticket data
             document.getElementById('editName').value = ticket.name;
             document.getElementById('editTicketPrice').value = ticket.ticketPrice;
             document.getElementById('editQuantity').value = ticket.quantity;
             document.getElementById('editDownPayment').value = ticket.downPayment;
 
-            // Store the current ticket index for saving later
             currentEditIndex = index;
-
-            // Show the edit form
             document.getElementById('editForm').style.display = 'block';
         }
 
@@ -297,37 +303,39 @@
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[currentEditIndex];
 
-            // Update ticket data with new values from the form
             ticket.name = document.getElementById('editName').value;
             ticket.ticketPrice = parseFloat(document.getElementById('editTicketPrice').value);
             ticket.quantity = parseInt(document.getElementById('editQuantity').value);
             ticket.downPayment = parseFloat(document.getElementById('editDownPayment').value);
+
+            // Recalculate total and pending amounts
             ticket.totalAmount = ticket.ticketPrice * ticket.quantity;
             ticket.pendingAmount = ticket.totalAmount - ticket.downPayment;
 
-            // Save the updated ticket to localStorage
+            // Update ticket in localStorage
             tickets[currentEditIndex] = ticket;
             localStorage.setItem('tickets', JSON.stringify(tickets));
-
-            // Close the form and reload the ticket list
-            closeEditForm();
             loadTickets('pending');
+            closeEditForm();
         });
 
         function displayPaymentHistory(ticket, index) {
             const paymentHistoryDiv = document.getElementById(`paymentHistory-${index}`);
+            paymentHistoryDiv.innerHTML = '';
+
             if (ticket.paymentHistory && ticket.paymentHistory.length > 0) {
-                paymentHistoryDiv.innerHTML = '<strong>Payment History:</strong>';
                 ticket.paymentHistory.forEach(payment => {
-                    paymentHistoryDiv.innerHTML += `  
-                        <p>Amount: $${payment.amount} - Date: ${payment.date}</p>
-                    `;
+                    const paymentItem = document.createElement('p');
+                    paymentItem.innerText = `Paid $${payment.amount} on ${payment.date}`;
+                    paymentHistoryDiv.appendChild(paymentItem);
                 });
-            } else {
-                paymentHistoryDiv.innerHTML = '<p>No payments made yet.</p>';
             }
         }
     </script>
+
+    <div class="footer">
+        <p>Footer content here</p>
+    </div>
 
 </body>
 </html>
