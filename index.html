@@ -136,6 +136,26 @@
             display: none;
         }
 
+        /* Styling for the full payment checkbox */
+        .fullPayment-group {
+            margin-bottom: 20px;
+        }
+
+        .fullPayment-group label {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .fullPayment-group input {
+            margin-right: 10px;
+        }
+
+        .fullPayment-group .checkbox-text {
+            color: #555;
+            font-size: 14px;
+        }
+
     </style>
 </head>
 <body>
@@ -166,10 +186,11 @@
                 <label for="downPayment"><i class="fas fa-credit-card"></i> Down Payment:</label>
                 <input type="number" id="downPayment" placeholder="Down Payment Amount" required>
             </div>
-            <div class="form-group">
+            <div class="form-group fullPayment-group">
                 <label for="fullPayment">
                     <input type="checkbox" id="fullPayment"> Full Payment (if checked, no pending balance)
                 </label>
+                <p class="checkbox-text">If you select full payment, your transaction will be marked as complete and you will be redirected.</p>
             </div>
             <button type="submit"><i class="fas fa-paper-plane"></i> Add Ticket</button>
         </form>
