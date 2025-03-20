@@ -156,7 +156,7 @@
                         ${displayPaymentHistory(ticket.paymentHistory)}
                     </div>
                     <button onclick="editTicket(${index})">Edit</button>
-                    <button onclick="deleteTicket(${index})">Delete</button>
+                    <button onclick="moveTicket(${index})">Move</button>
                 `;
                 ticketList.appendChild(ticketItem);
             });
@@ -171,7 +171,7 @@
             `).join('');
         }
 
-        function deleteTicket(index) {
+        function moveTicket(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets.splice(index, 1)[0]; // Remove ticket from the array
 
