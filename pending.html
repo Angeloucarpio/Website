@@ -243,7 +243,13 @@
                     <button onclick="makePayment(${index})">Make Payment</button>
                     <button onclick="deleteTicket(${index})">Delete</button>
                     <button onclick="addAdditionalTicket(${index})">Add Ticket</button>
-                    <div class="pending-date"><strong>Pending since:</strong> ${ticket.pendingDate}</div>`;
+                    <div class="pending-date"><strong>Pending since:</strong> ${ticket.pendingDate}</div>
+                    <div class="payment-history">
+                        <h4>Payment History:</h4>
+                        ${ticket.paymentHistory && ticket.paymentHistory.length > 0 ? ticket.paymentHistory.map(payment => 
+                            `<p><strong>Payment:</strong> $${payment.amount} - <em>${payment.date}</em></p>`
+                        ).join('') : '<p>No payments made yet.</p>'}
+                    </div>`;
                 ticketList.appendChild(ticketItem);
             });
         }
@@ -256,6 +262,13 @@
             const paymentAmount = prompt('Enter payment amount:');
             if (paymentAmount && parseFloat(paymentAmount) > 0) {
                 ticket.pendingAmount -= parseFloat(paymentAmount);
+
+                // Add payment to history
+                if (!ticket.paymentHistory) ticket.paymentHistory = [];
+                ticket.paymentHistory.push({
+                    amount: paymentAmount,
+                    date: new Date().toLocaleString()
+                });
 
                 if (ticket.pendingAmount <= 0) {
                     ticket.status = 'paid';
