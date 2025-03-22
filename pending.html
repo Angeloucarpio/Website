@@ -228,11 +228,14 @@
             ticketList.innerHTML = '';
 
             tickets.filter(ticket => ticket.status === status).forEach((ticket, index) => {
+                // Unified container for both group and individual tickets
+                const ticketContainer = document.createElement('div');
+                ticketContainer.classList.add('ticket-item');
+
                 if (ticket.groupName) {
                     // Group ticket
-                    const groupContainer = document.createElement('div');
-                    groupContainer.classList.add('group-container');
-                    groupContainer.innerHTML = `
+                    ticketContainer.classList.add('group-container');
+                    ticketContainer.innerHTML = `
                         <p><strong>Group Name:</strong> ${ticket.groupName}</p>
                         <div><strong>Members:</strong></div>
                         ${ticket.members.map(member => `
@@ -242,12 +245,9 @@
                         <button onclick="addAdditionalTicket(${index})">Add Ticket</button>
                         <div class="pending-date"><strong>Pending since:</strong> ${ticket.pendingDate}</div>
                     `;
-                    ticketList.appendChild(groupContainer);
                 } else {
                     // Individual ticket
-                    const ticketItem = document.createElement('div');
-                    ticketItem.classList.add('ticket-item');
-                    ticketItem.innerHTML = `
+                    ticketContainer.innerHTML = `
                         <p><strong>Name:</strong> ${ticket.name}</p>
                         <p><strong>Ticket Price:</strong> $${ticket.ticketPrice}</p>
                         <p><strong>Quantity:</strong> ${ticket.quantity}</p>
@@ -259,8 +259,9 @@
                         <button onclick="addAdditionalTicket(${index})">Add Ticket</button>
                         <div class="pending-date"><strong>Pending since:</strong> ${ticket.pendingDate}</div>
                     `;
-                    ticketList.appendChild(ticketItem);
                 }
+
+                ticketList.appendChild(ticketContainer);
             });
         }
 
