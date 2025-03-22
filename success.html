@@ -160,7 +160,7 @@
                         <strong>Payment History:</strong>
                         ${displayPaymentHistory(ticket.paymentHistory)}
                     </div>
-                    <button onclick="editTicket(${index})">Edit</button>
+                    <button onclick="editTicket(${index})" ${ticket.status === 'paid' ? 'disabled' : ''}>Edit</button>
                     <button onclick="moveTicket(${index})">Move</button>
                 `;
                 ticketList.appendChild(ticketItem);
@@ -192,6 +192,12 @@
         function editTicket(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[index];
+
+            // Prevent editing if payment is completed (status is 'paid')
+            if (ticket.status === 'paid') {
+                alert('This ticket has been fully paid and cannot be edited.');
+                return;
+            }
 
             // Prompt the user to edit ticket details
             const newTicketPrice = prompt("Edit Ticket Price", ticket.ticketPrice);
