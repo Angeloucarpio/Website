@@ -206,10 +206,16 @@
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[0]; // Get the first (or only) ticket for now
 
+            // Calculate previous payment totals
+            let totalPayments = 0;
+            if (ticket.paymentHistory && ticket.paymentHistory.length > 0) {
+                totalPayments = ticket.paymentHistory.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
+            }
+
             // Update ticket data with new quantity and calculate totals
             ticket.quantity += quantity;
             ticket.totalAmount = ticket.ticketPrice * ticket.quantity;
-            ticket.pendingAmount = ticket.totalAmount - ticket.downPayment;
+            ticket.pendingAmount = ticket.totalAmount - ticket.downPayment - totalPayments;
 
             tickets[0] = ticket; // Update the ticket in storage
             localStorage.setItem('tickets', JSON.stringify(tickets));
