@@ -67,7 +67,7 @@
             text-align: center;
         }
 
-        .ticket-item {
+        .ticket-item, .group-container {
             background-color: #f4f4f4;
             border-radius: 8px;
             margin: 15px 0;
@@ -75,7 +75,7 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .ticket-item p {
+        .ticket-item p, .group-container p {
             font-size: 16px;
             margin: 10px 0;
         }
@@ -94,19 +94,6 @@
 
         button:hover {
             background-color: #0033aa;
-        }
-
-        .payment-history {
-            background-color: #e1f5fe;
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 15px;
-        }
-
-        .payment-history p {
-            margin: 5px 0;
-            font-size: 14px;
-            color: #333;
         }
 
         .pending-date {
@@ -162,6 +149,35 @@
             background-color: #0033aa;
         }
 
+        /* Slide-in Navbar Styles */
+        .slide-navbar {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100%;
+            background-color: #0044cc;
+            color: white;
+            padding: 20px;
+            transition: right 0.3s ease-in-out;
+            z-index: 1000;
+        }
+
+        .slide-navbar.open {
+            right: 0;
+        }
+
+        .slide-navbar button {
+            margin-top: 20px;
+        }
+
+        .close-slide {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -192,6 +208,14 @@
         <p>&copy; 2025 Chamber's Tour | <a href="#">Privacy Policy</a> | <a href="#">Contact</a></p>
     </div>
 
+    <!-- Slide-in Navbar -->
+    <div id="slideNavbar" class="slide-navbar">
+        <span class="close-slide" onclick="toggleSlideNavbar()">X</span>
+        <h3>Select Person</h3>
+        <div id="personList"></div>
+        <button onclick="makePaymentFromSlide()">Make Payment</button>
+    </div>
+
     <script>
         window.onload = function() {
             loadTickets('pending');
@@ -204,30 +228,78 @@
             ticketList.innerHTML = '';
 
             tickets.filter(ticket => ticket.status === status).forEach((ticket, index) => {
-                const ticketItem = document.createElement('div');
-                ticketItem.classList.add('ticket-item');
-                ticketItem.innerHTML = 
-                    `<p><strong>Name:</strong> ${ticket.name}</p>
-                    <p><strong>Ticket Price:</strong> $${ticket.ticketPrice}</p>
-                    <p><strong>Quantity:</strong> ${ticket.quantity}</p>
-                    <p><strong>Total Amount:</strong> $${ticket.totalAmount}</p>
-                    <p><strong>Down Payment:</strong> $${ticket.downPayment}</p>
-                    <p><strong>Pending Payment:</strong> $${ticket.pendingAmount}</p>
-                    <button onclick="makePayment(${index})">Make Payment</button>
-                    <button onclick="deleteTicket(${index})">Delete</button>
-                    <button onclick="addAdditionalTicket(${index})">Add Ticket</button>
-                    <div class="pending-date"><strong>Pending since:</strong> ${ticket.pendingDate}</div>
-                    <div class="payment-history">
-                        <h4>Payment History:</h4>
-                        ${ticket.paymentHistory && ticket.paymentHistory.length > 0 ? ticket.paymentHistory.map(payment => 
-                            `<p><strong>Payment:</strong> $${payment.amount} - <em>${payment.date}</em></p>`
-                        ).join('') : '<p>No payments made yet.</p>'}
-                    </div>`;
-                ticketList.appendChild(ticketItem);
+                if (ticket.groupName) {
+                    // Group ticket
+                    const groupContainer = document.createElement('div');
+                    groupContainer.classList.add('group-container');
+                    groupContainer.innerHTML = `
+                        <p><strong>Group Name:</strong> ${ticket.groupName}</p>
+                        <div><strong>Members:</strong></div>
+                        ${ticket.members.map(member => `
+                            <p><strong>${member.name}</strong> - Quantity: ${member.quantity}</p>
+                        `).join('')}
+                        <button onclick="openSlideNavbar(${index})">Make Payment</button>
+                        <button onclick="addAdditionalTicket(${index})">Add Ticket</button>
+                        <div class="pending-date"><strong>Pending since:</strong> ${ticket.pendingDate}</div>
+                    `;
+                    ticketList.appendChild(groupContainer);
+                } else {
+                    // Individual ticket
+                    const ticketItem = document.createElement('div');
+                    ticketItem.classList.add('ticket-item');
+                    ticketItem.innerHTML = `
+                        <p><strong>Name:</strong> ${ticket.name}</p>
+                        <p><strong>Ticket Price:</strong> $${ticket.ticketPrice}</p>
+                        <p><strong>Quantity:</strong> ${ticket.quantity}</p>
+                        <p><strong>Total Amount:</strong> $${ticket.totalAmount}</p>
+                        <p><strong>Down Payment:</strong> $${ticket.downPayment}</p>
+                        <p><strong>Pending Payment:</strong> $${ticket.pendingAmount}</p>
+                        <button onclick="makePayment(${index})">Make Payment</button>
+                        <button onclick="deleteTicket(${index})">Delete</button>
+                        <button onclick="addAdditionalTicket(${index})">Add Ticket</button>
+                        <div class="pending-date"><strong>Pending since:</strong> ${ticket.pendingDate}</div>
+                    `;
+                    ticketList.appendChild(ticketItem);
+                }
             });
         }
 
-        // Function to make a payment
+        // Function to open slide navbar for group payment
+        function openSlideNavbar(index) {
+            const tickets = JSON.parse(localStorage.getItem('tickets'));
+            const ticket = tickets[index];
+            const personList = document.getElementById('personList');
+            personList.innerHTML = '';
+
+            ticket.members.forEach((member, memberIndex) => {
+                const personButton = document.createElement('button');
+                personButton.innerText = `Pay for ${member.name}`;
+                personButton.onclick = function() {
+                    selectPersonForPayment(index, memberIndex);
+                };
+                personList.appendChild(personButton);
+            });
+
+            document.getElementById('slideNavbar').classList.add('open');
+        }
+
+        // Function to toggle slide navbar visibility
+        function toggleSlideNavbar() {
+            document.getElementById('slideNavbar').classList.remove('open');
+        }
+
+        // Function to select person for payment from the slide navbar
+        function selectPersonForPayment(ticketIndex, memberIndex) {
+            const tickets = JSON.parse(localStorage.getItem('tickets'));
+            const ticket = tickets[ticketIndex];
+            const selectedMember = ticket.members[memberIndex];
+            
+            // Simulate payment for the selected person
+            alert(`Making payment for ${selectedMember.name}`);
+            toggleSlideNavbar();
+        }
+
+        // Function to make a payment for a specific ticket
         function makePayment(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[index];
@@ -318,4 +390,4 @@
     </script>
 
 </body>
-</
+</html>

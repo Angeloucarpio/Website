@@ -128,6 +128,10 @@
             text-decoration: underline;
         }
 
+        #groupNameSection {
+            display: none;
+        }
+
     </style>
 </head>
 <body>
@@ -143,22 +147,22 @@
         <h1>Chamber's Tour</h1>
         <form id="tourForm">
             <div class="form-group">
+                <label for="entryType">Select Entry Type:</label>
+                <select id="entryType" required>
+                    <option value="group">Group</option>
+                    <option value="person">Specific Person</option>
+                </select>
+            </div>
+
+            <div id="groupNameSection" class="form-group">
                 <label for="groupName"><i class="fas fa-users"></i> Group Name:</label>
-                <input type="text" id="groupName" placeholder="Group Name" required>
+                <input type="text" id="groupName" placeholder="Group Name">
             </div>
+
             <div id="persons">
-                <div class="form-group person">
-                    <label for="name"><i class="fas fa-user"></i> Enter Person's Name:</label>
-                    <input type="text" class="personName" placeholder="Person's Name" required>
-                    <label for="ticketPrice"><i class="fas fa-ticket-alt"></i> Ticket Price (each):</label>
-                    <input type="number" class="ticketPrice" placeholder="Price in USD" required>
-                    <label for="quantity"><i class="fas fa-trophy"></i> Quantity:</label>
-                    <input type="number" class="quantity" placeholder="Number of Tickets" required>
-                    <label for="downPayment"><i class="fas fa-credit-card"></i> Down Payment:</label>
-                    <input type="number" class="downPayment" placeholder="Down Payment Amount" required>
-                    <hr>
-                </div>
+                <!-- Individual or Group Input Fields will appear here -->
             </div>
+
             <button type="button" id="addPersonButton"><i class="fas fa-user-plus"></i> Add Person</button>
             <button type="submit"><i class="fas fa-paper-plane"></i> Add Tickets</button>
         </form>
@@ -169,7 +173,27 @@
     </div>
 
     <script>
-        document.getElementById('addPersonButton').addEventListener('click', function() {
+        document.getElementById('entryType').addEventListener('change', function() {
+            const entryType = this.value;
+            const groupNameSection = document.getElementById('groupNameSection');
+            const addPersonButton = document.getElementById('addPersonButton');
+            const personsContainer = document.getElementById('persons');
+
+            if (entryType === 'group') {
+                groupNameSection.style.display = 'block';
+                personsContainer.innerHTML = '';  // Clear any previous input for a person
+                addPersonButton.style.display = 'block';  // Show 'Add Person' button
+            } else {
+                groupNameSection.style.display = 'none';
+                personsContainer.innerHTML = '';  // Clear any group input
+                addPersonButton.style.display = 'none';  // Hide 'Add Person' button for specific person
+                addSpecificPerson();
+            }
+        });
+
+        // Function to Add a Specific Person's Form
+        function addSpecificPerson() {
+            const personsContainer = document.getElementById('persons');
             const personGroup = document.createElement('div');
             personGroup.classList.add('form-group', 'person');
             personGroup.innerHTML = `
@@ -183,17 +207,38 @@
                 <input type="number" class="downPayment" placeholder="Down Payment Amount" required>
                 <hr>
             `;
-            document.getElementById('persons').appendChild(personGroup);
+            personsContainer.appendChild(personGroup);
+        }
+
+        // Add functionality for adding multiple people to the group
+        document.getElementById('addPersonButton').addEventListener('click', function() {
+            const entryType = document.getElementById('entryType').value;
+            if (entryType === 'group') {
+                const personGroup = document.createElement('div');
+                personGroup.classList.add('form-group', 'person');
+                personGroup.innerHTML = `
+                    <label for="name"><i class="fas fa-user"></i> Enter Person's Name:</label>
+                    <input type="text" class="personName" placeholder="Person's Name" required>
+                    <label for="ticketPrice"><i class="fas fa-ticket-alt"></i> Ticket Price (each):</label>
+                    <input type="number" class="ticketPrice" placeholder="Price in USD" required>
+                    <label for="quantity"><i class="fas fa-trophy"></i> Quantity:</label>
+                    <input type="number" class="quantity" placeholder="Number of Tickets" required>
+                    <label for="downPayment"><i class="fas fa-credit-card"></i> Down Payment:</label>
+                    <input type="number" class="downPayment" placeholder="Down Payment Amount" required>
+                    <hr>
+                `;
+                document.getElementById('persons').appendChild(personGroup);
+            }
         });
 
         document.getElementById('tourForm').addEventListener('submit', function (e) {
             e.preventDefault();
             const groupName = document.getElementById('groupName').value;
+            const entryType = document.getElementById('entryType').value;
             const persons = document.querySelectorAll('.person');
 
-            if (groupName && persons.length > 0) {
+            if ((entryType === 'group' && groupName) || entryType === 'person') {
                 const tickets = JSON.parse(localStorage.getItem('tickets')) || [];
-                
                 persons.forEach(person => {
                     const name = person.querySelector('.personName').value;
                     const ticketPrice = parseFloat(person.querySelector('.ticketPrice').value);
