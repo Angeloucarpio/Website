@@ -134,25 +134,34 @@
             text-decoration: underline;
         }
 
-        .edit-form {
-            display: none;
-            background-color: #f4f4f4;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 20px;
+        .add-ticket-form {
+            display: none; /* Hide form initially */
+            margin-bottom: 30px;
         }
 
-        .edit-form input {
+        .add-ticket-form input {
             padding: 8px;
-            margin: 5px;
+            margin: 10px 0;
             width: 100%;
             border-radius: 5px;
             border: 1px solid #ccc;
         }
 
-        .edit-form button {
+        .add-ticket-form button {
+            background-color: #0044cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
             margin-top: 10px;
         }
+
+        .add-ticket-form button:hover {
+            background-color: #0033aa;
+        }
+
     </style>
 </head>
 <body>
@@ -166,36 +175,68 @@
     
     <div class="container">
         <h1>Pending Tickets</h1>
-        <div id="ticketList"></div>
-        <div id="editForm" class="edit-form">
-            <h2>Edit Ticket</h2>
-            <form id="ticketEditForm">
-                <label for="editName">Name:</label>
-                <input type="text" id="editName" name="name" required>
 
-                <label for="editTicketPrice">Ticket Price ($):</label>
-                <input type="number" id="editTicketPrice" name="ticketPrice" required>
-
-                <label for="editQuantity">Quantity:</label>
-                <input type="number" id="editQuantity" name="quantity" required>
-
-                <label for="editDownPayment">Down Payment ($):</label>
-                <input type="number" id="editDownPayment" name="downPayment" required>
-
-                <button type="submit">Save Changes</button>
-                <button type="button" onclick="closeEditForm()">Cancel</button>
+        <!-- Add Ticket Form -->
+        <div class="add-ticket-form" id="addTicketForm">
+            <h2>Add New Ticket</h2>
+            <form id="ticketForm">
+                <input type="text" id="ticketName" placeholder="Enter Ticket Name" required>
+                <input type="number" id="ticketPrice" placeholder="Ticket Price ($)" required>
+                <input type="number" id="ticketQuantity" placeholder="Quantity" required>
+                <input type="number" id="downPayment" placeholder="Down Payment ($)" required>
+                <button type="submit">Add Ticket</button>
             </form>
         </div>
+
+        <div id="ticketList"></div>
     </div>
 
-
-
     <script>
-        let currentEditIndex = null; // To track the ticket being edited
-
         window.onload = function() {
             loadTickets('pending');
         };
+
+        // Function to Add Ticket
+        document.getElementById('ticketForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('ticketName').value;
+            const ticketPrice = parseFloat(document.getElementById('ticketPrice').value);
+            const quantity = parseInt(document.getElementById('ticketQuantity').value);
+            const downPayment = parseFloat(document.getElementById('downPayment').value);
+
+            // Validate input fields
+            if (!name || isNaN(ticketPrice) || isNaN(quantity) || isNaN(downPayment) || ticketPrice <= 0 || quantity <= 0 || downPayment < 0) {
+                alert("Please fill in all fields with valid values.");
+                return;
+            }
+
+            const newTicket = {
+                name: name,
+                ticketPrice: ticketPrice,
+                quantity: quantity,
+                totalAmount: ticketPrice * quantity,
+                downPayment: downPayment,
+                pendingAmount: (ticketPrice * quantity) - downPayment,
+                status: 'pending',
+                pendingDate: new Date().toLocaleString(),
+            };
+
+            const tickets = JSON.parse(localStorage.getItem('tickets')) || [];
+            tickets.push(newTicket);
+            localStorage.setItem('tickets', JSON.stringify(tickets));
+
+            loadTickets('pending');
+
+            // Reset form and hide it
+            document.getElementById('ticketForm').reset();
+            toggleForm();
+        });
+
+        function toggleForm() {
+            const form = document.getElementById('addTicketForm');
+            form.style.display = form.style.display === 'none' || form.style.display === '' ? 'block' : 'none';
+        }
 
         function loadTickets(status) {
             const tickets = JSON.parse(localStorage.getItem('tickets')) || [];
@@ -205,8 +246,8 @@
             tickets.filter(ticket => ticket.status === status).forEach((ticket, index) => {
                 const ticketItem = document.createElement('div');
                 ticketItem.classList.add('ticket-item');
-                ticketItem.innerHTML = `
-                    <p><strong>Name:</strong> ${ticket.name}</p>
+                ticketItem.innerHTML = 
+                    `<p><strong>Name:</strong> ${ticket.name}</p>
                     <p><strong>Ticket Price:</strong> $${ticket.ticketPrice}</p>
                     <p><strong>Quantity:</strong> ${ticket.quantity}</p>
                     <p><strong>Total Amount:</strong> $${ticket.totalAmount}</p>
@@ -214,15 +255,13 @@
                     <p><strong>Pending Payment:</strong> $${ticket.pendingAmount}</p>
                     <button onclick="makePayment(${index})">Make Payment</button>
                     <button onclick="deleteTicket(${index})">Delete</button>
-                    <button onclick="editTicket(${index})">Edit</button>
-                    <div id="paymentHistory-${index}" class="payment-history"></div>
-                    <div class="pending-date"><strong>Pending since:</strong> ${ticket.pendingDate}</div>
-                `;
+                    <button onclick="addAdditionalTicket(${index})">Add Ticket</button>
+                    <div class="pending-date"><strong>Pending since:</strong> ${ticket.pendingDate}</div>`;
                 ticketList.appendChild(ticketItem);
-                displayPaymentHistory(ticket, index);
             });
         }
 
+        // Function to make a payment
         function makePayment(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[index];
@@ -230,18 +269,6 @@
             const paymentAmount = prompt('Enter payment amount:');
             if (paymentAmount && parseFloat(paymentAmount) > 0) {
                 ticket.pendingAmount -= parseFloat(paymentAmount);
-
-                // Add payment details with timestamp
-                const paymentDate = new Date().toLocaleString();
-                const paymentDetails = {
-                    amount: paymentAmount,
-                    date: paymentDate
-                };
-
-                if (!ticket.paymentHistory) {
-                    ticket.paymentHistory = [];
-                }
-                ticket.paymentHistory.push(paymentDetails);
 
                 if (ticket.pendingAmount <= 0) {
                     ticket.status = 'paid';
@@ -256,6 +283,7 @@
             }
         }
 
+        // Function to delete a ticket
         function deleteTicket(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             tickets.splice(index, 1);
@@ -263,63 +291,40 @@
             loadTickets('pending');
         }
 
-        function editTicket(index) {
+        // Function to add additional ticket with updated quantity
+        function addAdditionalTicket(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[index];
 
-            // Populate the form with ticket data
-            document.getElementById('editName').value = ticket.name;
-            document.getElementById('editTicketPrice').value = ticket.ticketPrice;
-            document.getElementById('editQuantity').value = ticket.quantity;
-            document.getElementById('editDownPayment').value = ticket.downPayment;
+            // Show the form with filled data
+            document.getElementById('ticketName').value = ticket.name;
+            document.getElementById('ticketPrice').value = ticket.ticketPrice;
+            document.getElementById('ticketQuantity').value = 1;  // Default to adding 1 more ticket
+            document.getElementById('downPayment').value = ticket.downPayment;
 
-            // Store the current ticket index for saving later
-            currentEditIndex = index;
+            toggleForm();
 
-            // Show the edit form
-            document.getElementById('editForm').style.display = 'block';
+            // Update ticket after user submits
+            document.getElementById('ticketForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const quantity = parseInt(document.getElementById('ticketQuantity').value);
+
+                // Update the ticket's quantity and recalculate total and pending amounts
+                ticket.quantity += quantity;
+                ticket.totalAmount = ticket.ticketPrice * ticket.quantity;
+                ticket.pendingAmount = ticket.totalAmount - ticket.downPayment;
+
+                // Save the updated ticket
+                tickets[index] = ticket;
+                localStorage.setItem('tickets', JSON.stringify(tickets));
+
+                loadTickets('pending');
+                toggleForm(); // Close form
+                document.getElementById('ticketForm').reset(); // Reset form
+            });
         }
 
-        function closeEditForm() {
-            document.getElementById('editForm').style.display = 'none';
-        }
-
-        document.getElementById('ticketEditForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-
-            const tickets = JSON.parse(localStorage.getItem('tickets'));
-            const ticket = tickets[currentEditIndex];
-
-            // Update ticket data with new values from the form
-            ticket.name = document.getElementById('editName').value;
-            ticket.ticketPrice = parseFloat(document.getElementById('editTicketPrice').value);
-            ticket.quantity = parseInt(document.getElementById('editQuantity').value);
-            ticket.downPayment = parseFloat(document.getElementById('editDownPayment').value);
-            ticket.totalAmount = ticket.ticketPrice * ticket.quantity;
-            ticket.pendingAmount = ticket.totalAmount - ticket.downPayment;
-
-            // Save the updated ticket to localStorage
-            tickets[currentEditIndex] = ticket;
-            localStorage.setItem('tickets', JSON.stringify(tickets));
-
-            // Close the form and reload the ticket list
-            closeEditForm();
-            loadTickets('pending');
-        });
-
-        function displayPaymentHistory(ticket, index) {
-            const paymentHistoryDiv = document.getElementById(`paymentHistory-${index}`);
-            if (ticket.paymentHistory && ticket.paymentHistory.length > 0) {
-                paymentHistoryDiv.innerHTML = '<strong>Payment History:</strong>';
-                ticket.paymentHistory.forEach(payment => {
-                    paymentHistoryDiv.innerHTML += `
-                        <p>Amount: $${payment.amount} - Date: ${payment.date}</p>
-                    `;
-                });
-            } else {
-                paymentHistoryDiv.innerHTML = '<p>No payments made yet.</p>';
-            }
-        }
     </script>
 
 </body>
