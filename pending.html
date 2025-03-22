@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale: 1.0">
     <title>Pending Tickets</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
+        /* General Styles */
         * {
             margin: 0;
             padding: 0;
@@ -171,7 +172,7 @@
         <a href="success.html">Success</a>
         <a href="transactionRecorded.html">Transaction Record</a>
     </div>
-    
+
     <div class="container">
         <h1>Pending Tickets</h1>
 
@@ -187,51 +188,16 @@
         <div id="ticketList"></div>
     </div>
 
+    <div class="footer">
+        <p>&copy; 2025 Chamber's Tour | <a href="#">Privacy Policy</a> | <a href="#">Contact</a></p>
+    </div>
+
     <script>
         window.onload = function() {
             loadTickets('pending');
         };
 
-        // Function to Add Ticket Quantity
-        document.getElementById('ticketForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-
-            const quantity = parseInt(document.getElementById('ticketQuantity').value);
-            
-            if (isNaN(quantity) || quantity <= 0) {
-                alert("Please enter a valid quantity.");
-                return;
-            }
-
-            const tickets = JSON.parse(localStorage.getItem('tickets'));
-            const selectedTicketIndex = document.getElementById('ticketQuantity').getAttribute('data-index'); // Get the selected ticket index
-            const ticket = tickets[selectedTicketIndex];
-
-            // Calculate previous payment totals
-            let totalPayments = 0;
-            if (ticket.paymentHistory && ticket.paymentHistory.length > 0) {
-                totalPayments = ticket.paymentHistory.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
-            }
-
-            // Update ticket data with new quantity and calculate totals
-            ticket.quantity += quantity;
-            ticket.totalAmount = ticket.ticketPrice * ticket.quantity;
-            ticket.pendingAmount = ticket.totalAmount - ticket.downPayment - totalPayments;
-
-            tickets[selectedTicketIndex] = ticket; // Update the selected ticket in storage
-            localStorage.setItem('tickets', JSON.stringify(tickets));
-
-            loadTickets('pending'); // Refresh the ticket list
-
-            document.getElementById('ticketForm').reset();
-            toggleForm();
-        });
-
-        function toggleForm() {
-            const form = document.getElementById('addTicketForm');
-            form.style.display = form.style.display === 'none' || form.style.display === '' ? 'block' : 'none';
-        }
-
+        // Function to load all tickets
         function loadTickets(status) {
             const tickets = JSON.parse(localStorage.getItem('tickets')) || [];
             const ticketList = document.getElementById('ticketList');
@@ -261,12 +227,12 @@
             });
         }
 
-        // Function to make a payment (updated)
+        // Function to make a payment
         function makePayment(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[index];
-
             const paymentAmount = prompt('Enter payment amount:');
+
             if (paymentAmount && parseFloat(paymentAmount) > 0) {
                 ticket.pendingAmount -= parseFloat(paymentAmount);
 
@@ -298,7 +264,7 @@
             loadTickets('pending');
         }
 
-        // Function to add additional ticket with updated quantity
+        // Function to add additional ticket
         function addAdditionalTicket(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[index];
@@ -308,7 +274,48 @@
             document.getElementById('ticketQuantity').setAttribute('data-index', index); // Set the selected ticket index
         }
 
+        // Toggle the add ticket form visibility
+        function toggleForm() {
+            const form = document.getElementById('addTicketForm');
+            form.style.display = form.style.display === 'none' || form.style.display === '' ? 'block' : 'none';
+        }
+
+        // Add additional ticket quantity
+        document.getElementById('ticketForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const quantity = parseInt(document.getElementById('ticketQuantity').value);
+
+            if (isNaN(quantity) || quantity <= 0) {
+                alert("Please enter a valid quantity.");
+                return;
+            }
+
+            const tickets = JSON.parse(localStorage.getItem('tickets'));
+            const selectedTicketIndex = document.getElementById('ticketQuantity').getAttribute('data-index'); // Get the selected ticket index
+            const ticket = tickets[selectedTicketIndex];
+
+            // Calculate previous payment totals
+            let totalPayments = 0;
+            if (ticket.paymentHistory && ticket.paymentHistory.length > 0) {
+                totalPayments = ticket.paymentHistory.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
+            }
+
+            // Update ticket data with new quantity and calculate totals
+            ticket.quantity += quantity;
+            ticket.totalAmount = ticket.ticketPrice * ticket.quantity;
+            ticket.pendingAmount = ticket.totalAmount - ticket.downPayment - totalPayments;
+
+            tickets[selectedTicketIndex] = ticket; // Update the selected ticket in storage
+            localStorage.setItem('tickets', JSON.stringify(tickets));
+
+            loadTickets('pending'); // Refresh the ticket list
+
+            document.getElementById('ticketForm').reset();
+            toggleForm();
+        });
+
     </script>
 
 </body>
-</html>
+</
