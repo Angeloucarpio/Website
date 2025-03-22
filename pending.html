@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale: 1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pending Tickets</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
@@ -22,7 +22,7 @@
             justify-content: flex-start;
             align-items: center;
             min-height: 100vh;
-            padding-top: 70px; /* Padding for the fixed navbar */
+            padding-top: 70px;
         }
 
         .navbar {
@@ -56,7 +56,8 @@
             background-color: #fff;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            margin-top: 80px; /* Space for the navbar */
+            margin-top: 80px;
+            text-align: center;
         }
 
         h1 {
@@ -64,7 +65,6 @@
             margin-bottom: 20px;
             font-size: 32px;
             font-weight: bold;
-            text-align: center;
         }
 
         .ticket-item {
@@ -80,39 +80,20 @@
             margin: 10px 0;
         }
 
-        button {
+        .btn {
             background-color: #0044cc;
             color: white;
             border: none;
             border-radius: 5px;
-            padding: 8px 16px;
+            padding: 10px 16px;
             cursor: pointer;
             margin: 5px;
             font-size: 16px;
             transition: background-color 0.3s ease;
         }
 
-        button:hover {
+        .btn:hover {
             background-color: #0033aa;
-        }
-
-        .payment-history {
-            background-color: #e1f5fe;
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 15px;
-        }
-
-        .payment-history p {
-            margin: 5px 0;
-            font-size: 14px;
-            color: #333;
-        }
-
-        .pending-date {
-            font-size: 14px;
-            color: #ff5722;
-            margin-top: 10px;
         }
 
         .footer {
@@ -123,40 +104,9 @@
             text-align: center;
             width: 100%;
         }
-
-        .footer a {
-            color: white;
-            text-decoration: none;
-            margin: 0 10px;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
-        }
-
-        .edit-form {
-            display: none;
-            background-color: #f4f4f4;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-
-        .edit-form input {
-            padding: 8px;
-            margin: 5px;
-            width: 100%;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-
-        .edit-form button {
-            margin-top: 10px;
-        }
     </style>
 </head>
 <body>
-
     <div class="navbar">
         <a href="index.html">Home</a>
         <a href="pending.html">Pending</a>
@@ -166,44 +116,35 @@
     
     <div class="container">
         <h1>Pending Tickets</h1>
+        <button class="btn" onclick="addTicket()">
+            <i class="fas fa-plus"></i> Add Ticket
+        </button>
         <div id="ticketList"></div>
-        <div id="editForm" class="edit-form">
-            <h2>Edit Ticket</h2>
-            <form id="ticketEditForm">
-                <label for="editName">Name:</label>
-                <input type="text" id="editName" name="name" required>
-
-                <label for="editTicketPrice">Ticket Price ($):</label>
-                <input type="number" id="editTicketPrice" name="ticketPrice" required>
-
-                <label for="editQuantity">Quantity:</label>
-                <input type="number" id="editQuantity" name="quantity" required>
-
-                <label for="editDownPayment">Down Payment ($):</label>
-                <input type="number" id="editDownPayment" name="downPayment" required>
-
-                <button type="submit">Save Changes</button>
-                <button type="button" onclick="closeEditForm()">Cancel</button>
-            </form>
-        </div>
     </div>
 
-
-
     <script>
-        let currentEditIndex = null; // To track the ticket being edited
+        let tickets = JSON.parse(localStorage.getItem('tickets')) || [];
 
-        window.onload = function() {
-            loadTickets('pending');
-        };
+        function addTicket() {
+            let name = prompt("Enter Name:");
+            let ticketPrice = parseFloat(prompt("Enter Ticket Price ($):"));
+            let quantity = parseInt(prompt("Enter Quantity:"));
+            let downPayment = parseFloat(prompt("Enter Down Payment ($):"));
 
-        function loadTickets(status) {
-            const tickets = JSON.parse(localStorage.getItem('tickets')) || [];
-            const ticketList = document.getElementById('ticketList');
+            let totalAmount = ticketPrice * quantity;
+            let pendingAmount = totalAmount - downPayment;
+
+            tickets.push({ name, ticketPrice, quantity, totalAmount, downPayment, pendingAmount, status: 'pending' });
+            localStorage.setItem('tickets', JSON.stringify(tickets));
+            loadTickets();
+        }
+
+        function loadTickets() {
+            let ticketList = document.getElementById('ticketList');
             ticketList.innerHTML = '';
 
-            tickets.filter(ticket => ticket.status === status).forEach((ticket, index) => {
-                const ticketItem = document.createElement('div');
+            tickets.forEach((ticket, index) => {
+                let ticketItem = document.createElement('div');
                 ticketItem.classList.add('ticket-item');
                 ticketItem.innerHTML = `
                     <p><strong>Name:</strong> ${ticket.name}</p>
@@ -212,115 +153,29 @@
                     <p><strong>Total Amount:</strong> $${ticket.totalAmount}</p>
                     <p><strong>Down Payment:</strong> $${ticket.downPayment}</p>
                     <p><strong>Pending Payment:</strong> $${ticket.pendingAmount}</p>
-                    <button onclick="makePayment(${index})">Make Payment</button>
-                    <button onclick="deleteTicket(${index})">Delete</button>
-                    <button onclick="editTicket(${index})">Edit</button>
-                    <div id="paymentHistory-${index}" class="payment-history"></div>
-                    <div class="pending-date"><strong>Pending since:</strong> ${ticket.pendingDate}</div>
+                    <button class="btn" onclick="editTicket(${index})">Edit</button>
+                    <button class="btn" onclick="deleteTicket(${index})">Delete</button>
                 `;
                 ticketList.appendChild(ticketItem);
-                displayPaymentHistory(ticket, index);
             });
         }
 
-        function makePayment(index) {
-            const tickets = JSON.parse(localStorage.getItem('tickets'));
-            const ticket = tickets[index];
-
-            const paymentAmount = prompt('Enter payment amount:');
-            if (paymentAmount && parseFloat(paymentAmount) > 0) {
-                ticket.pendingAmount -= parseFloat(paymentAmount);
-
-                // Add payment details with timestamp
-                const paymentDate = new Date().toLocaleString();
-                const paymentDetails = {
-                    amount: paymentAmount,
-                    date: paymentDate
-                };
-
-                if (!ticket.paymentHistory) {
-                    ticket.paymentHistory = [];
-                }
-                ticket.paymentHistory.push(paymentDetails);
-
-                if (ticket.pendingAmount <= 0) {
-                    ticket.status = 'paid';
-                    alert("Payment successful! The ticket has been moved to the success page.");
-                }
-
-                tickets[index] = ticket;
-                localStorage.setItem('tickets', JSON.stringify(tickets));
-                loadTickets('pending');
-            } else {
-                alert('Invalid payment amount!');
-            }
+        function editTicket(index) {
+            let ticket = tickets[index];
+            let newDownPayment = parseFloat(prompt("Enter new Down Payment ($):", ticket.downPayment));
+            ticket.downPayment = newDownPayment;
+            ticket.pendingAmount = ticket.totalAmount - newDownPayment;
+            localStorage.setItem('tickets', JSON.stringify(tickets));
+            loadTickets();
         }
 
         function deleteTicket(index) {
-            const tickets = JSON.parse(localStorage.getItem('tickets'));
             tickets.splice(index, 1);
             localStorage.setItem('tickets', JSON.stringify(tickets));
-            loadTickets('pending');
+            loadTickets();
         }
 
-        function editTicket(index) {
-            const tickets = JSON.parse(localStorage.getItem('tickets'));
-            const ticket = tickets[index];
-
-            // Populate the form with ticket data
-            document.getElementById('editName').value = ticket.name;
-            document.getElementById('editTicketPrice').value = ticket.ticketPrice;
-            document.getElementById('editQuantity').value = ticket.quantity;
-            document.getElementById('editDownPayment').value = ticket.downPayment;
-
-            // Store the current ticket index for saving later
-            currentEditIndex = index;
-
-            // Show the edit form
-            document.getElementById('editForm').style.display = 'block';
-        }
-
-        function closeEditForm() {
-            document.getElementById('editForm').style.display = 'none';
-        }
-
-        document.getElementById('ticketEditForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-
-            const tickets = JSON.parse(localStorage.getItem('tickets'));
-            const ticket = tickets[currentEditIndex];
-
-            // Update ticket data with new values from the form
-            ticket.name = document.getElementById('editName').value;
-            ticket.ticketPrice = parseFloat(document.getElementById('editTicketPrice').value);
-            ticket.quantity = parseInt(document.getElementById('editQuantity').value);
-            ticket.downPayment = parseFloat(document.getElementById('editDownPayment').value);
-            ticket.totalAmount = ticket.ticketPrice * ticket.quantity;
-            ticket.pendingAmount = ticket.totalAmount - ticket.downPayment;
-
-            // Save the updated ticket to localStorage
-            tickets[currentEditIndex] = ticket;
-            localStorage.setItem('tickets', JSON.stringify(tickets));
-
-            // Close the form and reload the ticket list
-            closeEditForm();
-            loadTickets('pending');
-        });
-
-        function displayPaymentHistory(ticket, index) {
-            const paymentHistoryDiv = document.getElementById(`paymentHistory-${index}`);
-            if (ticket.paymentHistory && ticket.paymentHistory.length > 0) {
-                paymentHistoryDiv.innerHTML = '<strong>Payment History:</strong>';
-                ticket.paymentHistory.forEach(payment => {
-                    paymentHistoryDiv.innerHTML += `
-                        <p>Amount: $${payment.amount} - Date: ${payment.date}</p>
-                    `;
-                });
-            } else {
-                paymentHistoryDiv.innerHTML = '<p>No payments made yet.</p>';
-            }
-        }
+        window.onload = loadTickets;
     </script>
-
 </body>
 </html>
