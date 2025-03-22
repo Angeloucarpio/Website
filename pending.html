@@ -2,11 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale: 1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pending Tickets</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
-        /* General Styles */
         * {
             margin: 0;
             padding: 0;
@@ -67,7 +66,7 @@
             text-align: center;
         }
 
-        .ticket-item, .group-container {
+        .ticket-item {
             background-color: #f4f4f4;
             border-radius: 8px;
             margin: 15px 0;
@@ -75,7 +74,7 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .ticket-item p, .group-container p {
+        .ticket-item p {
             font-size: 16px;
             margin: 10px 0;
         }
@@ -94,6 +93,19 @@
 
         button:hover {
             background-color: #0033aa;
+        }
+
+        .payment-history {
+            background-color: #e1f5fe;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+
+        .payment-history p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #333;
         }
 
         .pending-date {
@@ -149,35 +161,6 @@
             background-color: #0033aa;
         }
 
-        /* Slide-in Navbar Styles */
-        .slide-navbar {
-            position: fixed;
-            top: 0;
-            right: -300px;
-            width: 300px;
-            height: 100%;
-            background-color: #0044cc;
-            color: white;
-            padding: 20px;
-            transition: right 0.3s ease-in-out;
-            z-index: 1000;
-        }
-
-        .slide-navbar.open {
-            right: 0;
-        }
-
-        .slide-navbar button {
-            margin-top: 20px;
-        }
-
-        .close-slide {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 20px;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
@@ -188,7 +171,7 @@
         <a href="success.html">Success</a>
         <a href="transactionRecorded.html">Transaction Record</a>
     </div>
-
+    
     <div class="container">
         <h1>Pending Tickets</h1>
 
@@ -204,108 +187,86 @@
         <div id="ticketList"></div>
     </div>
 
-    <div class="footer">
-        <p>&copy; 2025 Chamber's Tour | <a href="#">Privacy Policy</a> | <a href="#">Contact</a></p>
-    </div>
-
-    <!-- Slide-in Navbar -->
-    <div id="slideNavbar" class="slide-navbar">
-        <span class="close-slide" onclick="toggleSlideNavbar()">X</span>
-        <h3>Select Person</h3>
-        <div id="personList"></div>
-        <button onclick="makePaymentFromSlide()">Make Payment</button>
-    </div>
-
     <script>
         window.onload = function() {
             loadTickets('pending');
         };
 
-        // Function to load all tickets
+        // Function to Add Ticket Quantity
+        document.getElementById('ticketForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const quantity = parseInt(document.getElementById('ticketQuantity').value);
+            
+            if (isNaN(quantity) || quantity <= 0) {
+                alert("Please enter a valid quantity.");
+                return;
+            }
+
+            const tickets = JSON.parse(localStorage.getItem('tickets'));
+            const selectedTicketIndex = document.getElementById('ticketQuantity').getAttribute('data-index'); // Get the selected ticket index
+            const ticket = tickets[selectedTicketIndex];
+
+            // Calculate previous payment totals
+            let totalPayments = 0;
+            if (ticket.paymentHistory && ticket.paymentHistory.length > 0) {
+                totalPayments = ticket.paymentHistory.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
+            }
+
+            // Update ticket data with new quantity and calculate totals
+            ticket.quantity += quantity;
+            ticket.totalAmount = ticket.ticketPrice * ticket.quantity;
+            ticket.pendingAmount = ticket.totalAmount - ticket.downPayment - totalPayments;
+
+            tickets[selectedTicketIndex] = ticket; // Update the selected ticket in storage
+            localStorage.setItem('tickets', JSON.stringify(tickets));
+
+            loadTickets('pending'); // Refresh the ticket list
+
+            document.getElementById('ticketForm').reset();
+            toggleForm();
+        });
+
+        function toggleForm() {
+            const form = document.getElementById('addTicketForm');
+            form.style.display = form.style.display === 'none' || form.style.display === '' ? 'block' : 'none';
+        }
+
         function loadTickets(status) {
             const tickets = JSON.parse(localStorage.getItem('tickets')) || [];
             const ticketList = document.getElementById('ticketList');
             ticketList.innerHTML = '';
 
             tickets.filter(ticket => ticket.status === status).forEach((ticket, index) => {
-                // Unified container for both group and individual tickets
-                const ticketContainer = document.createElement('div');
-                ticketContainer.classList.add('ticket-item');
-
-                if (ticket.groupName) {
-                    // Group ticket
-                    ticketContainer.classList.add('group-container');
-                    ticketContainer.innerHTML = `
-                        <p><strong>Group Name:</strong> ${ticket.groupName}</p>
-                        <div><strong>Members:</strong></div>
-                        ${ticket.members.map(member => `
-                            <p><strong>${member.name}</strong> - Quantity: ${member.quantity}</p>
-                        `).join('')}
-                        <button onclick="openSlideNavbar(${index})">Make Payment</button>
-                        <button onclick="addAdditionalTicket(${index})">Add Ticket</button>
-                        <div class="pending-date"><strong>Pending since:</strong> ${ticket.pendingDate}</div>
-                    `;
-                } else {
-                    // Individual ticket
-                    ticketContainer.innerHTML = `
-                        <p><strong>Name:</strong> ${ticket.name}</p>
-                        <p><strong>Ticket Price:</strong> $${ticket.ticketPrice}</p>
-                        <p><strong>Quantity:</strong> ${ticket.quantity}</p>
-                        <p><strong>Total Amount:</strong> $${ticket.totalAmount}</p>
-                        <p><strong>Down Payment:</strong> $${ticket.downPayment}</p>
-                        <p><strong>Pending Payment:</strong> $${ticket.pendingAmount}</p>
-                        <button onclick="makePayment(${index})">Make Payment</button>
-                        <button onclick="deleteTicket(${index})">Delete</button>
-                        <button onclick="addAdditionalTicket(${index})">Add Ticket</button>
-                        <div class="pending-date"><strong>Pending since:</strong> ${ticket.pendingDate}</div>
-                    `;
-                }
-
-                ticketList.appendChild(ticketContainer);
+                const ticketItem = document.createElement('div');
+                ticketItem.classList.add('ticket-item');
+                ticketItem.innerHTML = 
+                    `<p><strong>Name:</strong> ${ticket.name}</p>
+                    <p><strong>Ticket Price:</strong> $${ticket.ticketPrice}</p>
+                    <p><strong>Quantity:</strong> ${ticket.quantity}</p>
+                    <p><strong>Total Amount:</strong> $${ticket.totalAmount}</p>
+                    <p><strong>Down Payment:</strong> $${ticket.downPayment}</p>
+                    <p><strong>Pending Payment:</strong> $${ticket.pendingAmount}</p>
+                    <button onclick="makePayment(${index})">Make Payment</button>
+                    <button onclick="deleteTicket(${index})">Delete</button>
+                    <button onclick="addAdditionalTicket(${index})">Add Ticket</button>
+                    <div class="pending-date"><strong>Pending since:</strong> ${ticket.pendingDate}</div>
+                    <div class="payment-history">
+                        <h4>Payment History:</h4>
+                        ${ticket.paymentHistory && ticket.paymentHistory.length > 0 ? ticket.paymentHistory.map(payment => 
+                            `<p><strong>Payment:</strong> $${payment.amount} - <em>${payment.date}</em></p>`
+                        ).join('') : '<p>No payments made yet.</p>'}
+                    </div>`;
+                ticketList.appendChild(ticketItem);
             });
         }
 
-        // Function to open slide navbar for group payment
-        function openSlideNavbar(index) {
-            const tickets = JSON.parse(localStorage.getItem('tickets'));
-            const ticket = tickets[index];
-            const personList = document.getElementById('personList');
-            personList.innerHTML = '';
-
-            ticket.members.forEach((member, memberIndex) => {
-                const personButton = document.createElement('button');
-                personButton.innerText = `Pay for ${member.name}`;
-                personButton.onclick = function() {
-                    selectPersonForPayment(index, memberIndex);
-                };
-                personList.appendChild(personButton);
-            });
-
-            document.getElementById('slideNavbar').classList.add('open');
-        }
-
-        // Function to toggle slide navbar visibility
-        function toggleSlideNavbar() {
-            document.getElementById('slideNavbar').classList.remove('open');
-        }
-
-        // Function to select person for payment from the slide navbar
-        function selectPersonForPayment(ticketIndex, memberIndex) {
-            const tickets = JSON.parse(localStorage.getItem('tickets'));
-            const ticket = tickets[ticketIndex];
-            const selectedMember = ticket.members[memberIndex];
-            
-            // Simulate payment for the selected person
-            alert(`Making payment for ${selectedMember.name}`);
-            toggleSlideNavbar();
-        }
-
-        // Function to make a payment for a specific ticket
+        // Function to make a payment (updated)
         function makePayment(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[index];
-            const paymentAmount = prompt('Enter payment amount:');
 
+            const paymentAmount = prompt('Enter payment amount:');
             if (paymentAmount && parseFloat(paymentAmount) > 0) {
                 ticket.pendingAmount -= parseFloat(paymentAmount);
 
@@ -337,7 +298,7 @@
             loadTickets('pending');
         }
 
-        // Function to add additional ticket
+        // Function to add additional ticket with updated quantity
         function addAdditionalTicket(index) {
             const tickets = JSON.parse(localStorage.getItem('tickets'));
             const ticket = tickets[index];
@@ -346,47 +307,6 @@
             toggleForm();
             document.getElementById('ticketQuantity').setAttribute('data-index', index); // Set the selected ticket index
         }
-
-        // Toggle the add ticket form visibility
-        function toggleForm() {
-            const form = document.getElementById('addTicketForm');
-            form.style.display = form.style.display === 'none' || form.style.display === '' ? 'block' : 'none';
-        }
-
-        // Add additional ticket quantity
-        document.getElementById('ticketForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-
-            const quantity = parseInt(document.getElementById('ticketQuantity').value);
-
-            if (isNaN(quantity) || quantity <= 0) {
-                alert("Please enter a valid quantity.");
-                return;
-            }
-
-            const tickets = JSON.parse(localStorage.getItem('tickets'));
-            const selectedTicketIndex = document.getElementById('ticketQuantity').getAttribute('data-index'); // Get the selected ticket index
-            const ticket = tickets[selectedTicketIndex];
-
-            // Calculate previous payment totals
-            let totalPayments = 0;
-            if (ticket.paymentHistory && ticket.paymentHistory.length > 0) {
-                totalPayments = ticket.paymentHistory.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
-            }
-
-            // Update ticket data with new quantity and calculate totals
-            ticket.quantity += quantity;
-            ticket.totalAmount = ticket.ticketPrice * ticket.quantity;
-            ticket.pendingAmount = ticket.totalAmount - ticket.downPayment - totalPayments;
-
-            tickets[selectedTicketIndex] = ticket; // Update the selected ticket in storage
-            localStorage.setItem('tickets', JSON.stringify(tickets));
-
-            loadTickets('pending'); // Refresh the ticket list
-
-            document.getElementById('ticketForm').reset();
-            toggleForm();
-        });
 
     </script>
 
